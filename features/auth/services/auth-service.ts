@@ -1,13 +1,12 @@
 import { api } from "@/lib/api/axios";
-import type { LoginRequest, LoginResponse } from "../types/auth";
+import type { LoginRequest } from "../types/auth";
 
 export async function login(
   request: LoginRequest
-): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>(
-    "/auth/login",
-    request
-  );
+): Promise<void> {
+  await api.post("/auth/login", request);
+}
 
-  return data;
+export async function logout(): Promise<void> {
+  await api.post("/auth/logout");
 }

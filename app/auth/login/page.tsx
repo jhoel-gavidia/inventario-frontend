@@ -26,14 +26,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await login({
+      await login({
         username,
         password,
       });
 
-      localStorage.setItem("access_token", response.token);
-
       window.location.href = "/dashboard";
+
     } catch {
       setError("Usuario o contraseña incorrectos.");
     } finally {
@@ -122,17 +121,11 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
                 aria-label={
-                  showPassword
-                    ? "Ocultar contraseña"
-                    : "Mostrar contraseña"
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary transition hover:text-primary"
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
@@ -166,10 +159,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-7 flex gap-3 rounded-lg bg-surface-container-low p-4">
-          <ShieldCheck
-            size={20}
-            className="mt-0.5 shrink-0 text-primary"
-          />
+          <ShieldCheck size={20} className="mt-0.5 shrink-0 text-primary" />
 
           <div>
             <p className="text-sm font-semibold text-on-surface">
