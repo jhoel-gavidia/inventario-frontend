@@ -10,3 +10,7 @@ export async function login(
 export async function logout(): Promise<void> {
   await api.post("/auth/logout");
 }
+
+export async function checkSession(): Promise<void> {
+  await api.get("/auth/me");
+}
