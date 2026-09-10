@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Eye,
@@ -9,10 +9,13 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { login } from "@/features/auth/services/auth-service";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +34,7 @@ export default function LoginPage() {
         password,
       });
 
-      window.location.href = "/dashboard";
-
+      router.push("/dashboard");
     } catch {
       setError("Usuario o contraseña incorrectos.");
     } finally {
