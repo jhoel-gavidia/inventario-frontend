@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  Package,
-  Save,
-  X,
-} from "lucide-react";
+import { Package, Save, X } from "lucide-react";
 import { useState } from "react";
 
-import type {
-  Product,
-  ProductStatus,
-} from "../types/product";
+import type { Product, ProductStatus } from "../types/product";
 
 interface ProductDrawerProps {
   open: boolean;
@@ -20,9 +13,7 @@ interface ProductDrawerProps {
   onSave: (product: Product) => void;
 }
 
-const createEmptyProduct = (
-  categories: string[],
-): Product => ({
+const createEmptyProduct = (categories: string[]): Product => ({
   id: 0,
   codigo: "",
   nombre: "",
@@ -40,43 +31,27 @@ export function ProductDrawer({
   onClose,
   onSave,
 }: ProductDrawerProps) {
-  const [form, setForm] = useState<Product>(() =>
-    product ?? createEmptyProduct(categories),
+  const [form, setForm] = useState<Product>(
+    () => product ?? createEmptyProduct(categories),
   );
-
-  const [previousProductId, setPreviousProductId] =
-    useState<number | null>(product?.id ?? null);
-
-  if (product?.id !== previousProductId) {
-    setPreviousProductId(product?.id ?? null);
-    setForm(product ?? createEmptyProduct(categories));
-  }
 
   if (!open) {
     return null;
   }
 
-  const margin =
-    form.precioVenta - form.precioCompra;
+  const margin = form.precioVenta - form.precioCompra;
 
   const marginPercentage =
-    form.precioCompra > 0
-      ? (margin / form.precioCompra) * 100
-      : 0;
+    form.precioCompra > 0 ? (margin / form.precioCompra) * 100 : 0;
 
-  function update<K extends keyof Product>(
-    field: K,
-    value: Product[K],
-  ) {
+  function update<K extends keyof Product>(field: K, value: Product[K]) {
     setForm((current) => ({
       ...current,
       [field]: value,
     }));
   }
 
-  function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onSave(form);
   }
@@ -97,9 +72,7 @@ export function ProductDrawer({
 
             <div>
               <h2 className="font-semibold text-on-surface">
-                {product
-                  ? "Editar Repuesto"
-                  : "Nuevo Repuesto"}
+                {product ? "Editar Repuesto" : "Nuevo Repuesto"}
               </h2>
 
               <span className="text-xs text-secondary">
@@ -133,9 +106,7 @@ export function ProductDrawer({
               <input
                 required
                 value={form.codigo}
-                onChange={(event) =>
-                  update("codigo", event.target.value)
-                }
+                onChange={(event) => update("codigo", event.target.value)}
                 placeholder="ej. REP-MOT-045"
                 className="w-full rounded-xl bg-surface-container-low px-4 py-3 font-mono text-xs outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
               />
@@ -149,19 +120,12 @@ export function ProductDrawer({
               <select
                 value={form.estado}
                 onChange={(event) =>
-                  update(
-                    "estado",
-                    event.target.value as ProductStatus,
-                  )
+                  update("estado", event.target.value as ProductStatus)
                 }
                 className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
               >
-                <option value="ACTIVO">
-                  ACTIVO (Disponible)
-                </option>
-                <option value="INACTIVO">
-                  INACTIVO (Descontinuado)
-                </option>
+                <option value="ACTIVO">ACTIVO (Disponible)</option>
+                <option value="INACTIVO">INACTIVO (Descontinuado)</option>
               </select>
             </div>
           </div>
@@ -174,9 +138,7 @@ export function ProductDrawer({
             <input
               required
               value={form.nombre}
-              onChange={(event) =>
-                update("nombre", event.target.value)
-              }
+              onChange={(event) => update("nombre", event.target.value)}
               placeholder="ej. Kit Rodajes de Rueda Delantera"
               className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
             />
@@ -190,9 +152,7 @@ export function ProductDrawer({
             <select
               required
               value={form.categoria}
-              onChange={(event) =>
-                update("categoria", event.target.value)
-              }
+              onChange={(event) => update("categoria", event.target.value)}
               className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
             >
               {categories.map((category) => (
@@ -216,10 +176,7 @@ export function ProductDrawer({
                 type="number"
                 value={form.precioCompra}
                 onChange={(event) =>
-                  update(
-                    "precioCompra",
-                    Number(event.target.value),
-                  )
+                  update("precioCompra", Number(event.target.value))
                 }
                 className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-right font-mono text-xs outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
               />
@@ -237,10 +194,7 @@ export function ProductDrawer({
                 type="number"
                 value={form.precioVenta}
                 onChange={(event) =>
-                  update(
-                    "precioVenta",
-                    Number(event.target.value),
-                  )
+                  update("precioVenta", Number(event.target.value))
                 }
                 className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-right font-mono text-xs outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
               />
@@ -258,10 +212,7 @@ export function ProductDrawer({
               type="number"
               value={form.stockActual}
               onChange={(event) =>
-                update(
-                  "stockActual",
-                  Number(event.target.value),
-                )
+                update("stockActual", Number(event.target.value))
               }
               className="w-full rounded-xl bg-surface-container-low px-4 py-3 font-mono text-xs outline-none focus:bg-white focus:ring-2 focus:ring-primary/40"
             />
@@ -278,8 +229,7 @@ export function ProductDrawer({
               </span>
 
               <span className="font-mono text-xs font-bold text-primary">
-                S/ {margin.toFixed(2)} (
-                {marginPercentage.toFixed(1)}%)
+                S/ {margin.toFixed(2)} ({marginPercentage.toFixed(1)}%)
               </span>
             </div>
           </div>

@@ -15,26 +15,20 @@ import {
   productsMock,
 } from "@/features/products/mocks/products.mock";
 
-import type {
-  MovementType,
-  Product,
-} from "@/features/products/types/product";
+import type { MovementType, Product } from "@/features/products/types/product";
 
 export default function ProductosPage() {
-  const [products, setProducts] =
-    useState<Product[]>(productsMock);
+  const [products, setProducts] = useState<Product[]>(productsMock);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("ALL");
   const [status, setStatus] = useState("ALL");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [movementOpen, setMovementOpen] = useState(false);
-  const [movementProduct, setMovementProduct] =
-    useState<Product | null>(null);
+  const [movementProduct, setMovementProduct] = useState<Product | null>(null);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
@@ -46,22 +40,15 @@ export default function ProductosPage() {
         product.nombre.toLowerCase().includes(normalizedSearch);
 
       const matchesCategory =
-        category === "ALL" ||
-        product.categoria === category;
+        category === "ALL" || product.categoria === category;
 
       const matchesStatus =
         status === "ALL" ||
-        (status === "IN_STOCK" &&
-          product.stockActual > 0) ||
-        (status === "OUT_OF_STOCK" &&
-          product.stockActual === 0) ||
+        (status === "IN_STOCK" && product.stockActual > 0) ||
+        (status === "OUT_OF_STOCK" && product.stockActual === 0) ||
         product.estado === status;
 
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesStatus
-      );
+      return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [products, search, category, status]);
 
@@ -72,9 +59,7 @@ export default function ProductosPage() {
   ).length;
 
   const inventoryValue = products.reduce(
-    (total, product) =>
-      total +
-      product.precioCompra * product.stockActual,
+    (total, product) => total + product.precioCompra * product.stockActual,
     0,
   );
 
@@ -104,11 +89,7 @@ export default function ProductosPage() {
       ]);
     } else {
       setProducts((current) =>
-        current.map((item) =>
-          item.id === product.id
-            ? product
-            : item,
-        ),
+        current.map((item) => (item.id === product.id ? product : item)),
       );
     }
 
@@ -129,10 +110,7 @@ export default function ProductosPage() {
         const newStock =
           type === "ENTRADA"
             ? item.stockActual + quantity
-            : Math.max(
-                0,
-                item.stockActual - quantity,
-              );
+            : Math.max(0, item.stockActual - quantity);
 
         return {
           ...item,
@@ -163,8 +141,8 @@ export default function ProductosPage() {
             </h1>
 
             <p className="mt-2 text-sm text-secondary">
-              Gestión de inventario de repuestos para
-              mototaxis y servicios de taller.
+              Gestión de inventario de repuestos para mototaxis y servicios de
+              taller.
             </p>
           </div>
 
@@ -227,10 +205,7 @@ export default function ProductosPage() {
 
             <div className="flex flex-col gap-4">
               {categoryDistribution.map((item) => (
-                <div
-                  key={item.nombre}
-                  className="flex flex-col gap-1"
-                >
+                <div key={item.nombre} className="flex flex-col gap-1">
                   <div className="flex items-center justify-between font-mono text-[11px]">
                     <span>{item.nombre}</span>
 
@@ -266,10 +241,7 @@ export default function ProductosPage() {
                 </h2>
               </div>
 
-              <WalletCards
-                size={20}
-                className="text-primary"
-              />
+              <WalletCards size={20} className="text-primary" />
             </div>
 
             <div className="mt-6 flex flex-col gap-3">
@@ -309,10 +281,7 @@ export default function ProductosPage() {
                 </h2>
               </div>
 
-              <History
-                size={20}
-                className="text-secondary"
-              />
+              <History size={20} className="text-secondary" />
             </div>
 
             <div className="mt-6 rounded-xl bg-surface-container-low p-4">
@@ -336,6 +305,7 @@ export default function ProductosPage() {
       {/* DRAWER */}
 
       <ProductDrawer
+        key={selectedProduct?.id ?? "new"}
         open={drawerOpen}
         product={selectedProduct}
         categories={categories}
