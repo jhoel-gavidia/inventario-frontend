@@ -18,7 +18,7 @@ export default function ProtectedLayout({
   if (isChecking) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex items-center gap-2 text-sm text-secondary">
+        <div className="text-sm text-secondary">
           Verificando sesión...
         </div>
       </main>
@@ -39,3 +39,4 @@ export default function ProtectedLayout({
     </div>
   );
 }
+
