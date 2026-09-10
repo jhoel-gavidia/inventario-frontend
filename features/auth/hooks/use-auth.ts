@@ -7,7 +7,6 @@ import { checkSession } from "../services/auth-service";
 
 export function useAuth() {
   const router = useRouter();
-
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -28,3 +27,4 @@ export function useAuth() {
     isChecking,
   };
 }
+
