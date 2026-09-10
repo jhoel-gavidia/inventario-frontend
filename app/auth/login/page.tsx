@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Eye,
@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { login } from "@/features/auth/services/auth-service";
+import {
+  checkSession,
+  login,
+} from "@/features/auth/services/auth-service";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,8 +22,23 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function validateExistingSession() {
+      try {
+        await checkSession();
+        router.replace("/dashboard");
+      } catch {
+        setCheckingSession(false);
+      }
+    }
+
+    validateExistingSession();
+  }, [router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,12 +52,23 @@ export default function LoginPage() {
         password,
       });
 
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch {
       setError("Usuario o contraseña incorrectos.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex items-center gap-2 text-sm text-secondary">
+          <LoaderCircle size={18} className="animate-spin" />
+          Verificando sesión...
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -88,7 +117,8 @@ export default function LoginPage() {
               placeholder="Ingresa tu usuario"
               autoComplete="username"
               required
-              className="w-full rounded-lg border border-outline/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none transition placeholder:text-secondary/70 focus:border-primary focus:ring-2 focus:ring-primary/10"
+              disabled={loading}
+              className="w-full rounded-lg border border-outline/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none transition placeholder:text-secondary/70 focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
 
@@ -116,18 +146,26 @@ export default function LoginPage() {
                 placeholder="Ingresa tu contraseña"
                 autoComplete="current-password"
                 required
-                className="w-full rounded-lg border border-outline/30 bg-surface-container-low px-4 py-3 pr-12 text-sm text-on-surface outline-none transition placeholder:text-secondary/70 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                disabled={loading}
+                className="w-full rounded-lg border border-outline/30 bg-surface-container-low px-4 py-3 pr-12 text-sm text-on-surface outline-none transition placeholder:text-secondary/70 focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-70"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
                 aria-label={
-                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  showPassword
+                    ? "Ocultar contraseña"
+                    : "Mostrar contraseña"
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary transition hover:text-primary"
+                disabled={loading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
               </button>
             </div>
           </div>
@@ -161,7 +199,10 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-7 flex gap-3 rounded-lg bg-surface-container-low p-4">
-          <ShieldCheck size={20} className="mt-0.5 shrink-0 text-primary" />
+          <ShieldCheck
+            size={20}
+            className="mt-0.5 shrink-0 text-primary"
+          />
 
           <div>
             <p className="text-sm font-semibold text-on-surface">

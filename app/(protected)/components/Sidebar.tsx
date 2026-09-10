@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { logout } from "@/features/auth/services/auth-service";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -50,7 +52,17 @@ const menuItems = [
 ];
 
 export function Sidebar() {
+  const router = useRouter();
   const pathname = usePathname();
+
+  async function handleLogout() {
+    try {
+      await logout();
+      router.replace("/auth/login");
+    } catch {
+      router.replace("/auth/login");
+    }
+  }
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-full w-64 flex-col justify-between border-r border-slate-200/80 bg-surface-container-lowest">
@@ -127,6 +139,7 @@ export function Sidebar() {
 
         <button
           type="button"
+          onClick={handleLogout}
           className="flex w-full items-center justify-between rounded-xl border border-slate-200/80 bg-surface-container-lowest px-3 py-2 text-error shadow-sm transition-colors hover:bg-error-container/20 hover:text-on-error-container"
         >
           <span className="flex items-center gap-1 text-xs font-semibold">
