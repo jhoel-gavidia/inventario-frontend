@@ -1,15 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import {
-  getCategories,
-} from "../services/category-service";
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
+import { getCategories } from "../services/category-service";
 import type { Category } from "../types/product";
 
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(
+    [],
+  );
+
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const [error, setError] = useState<string | null>(
+    null,
+  );
 
   const refreshCategories = useCallback(async () => {
     try {
@@ -19,21 +28,43 @@ export function useCategories() {
 
       setCategories(data);
     } catch {
-      setError("No se pudieron cargar las categorías.");
+      setError(
+        "No se pudieron cargar las categorías.",
+      );
     }
   }, []);
 
   useEffect(() => {
-    async function load() {
-      setIsLoading(true);
+    let cancelled = false;
 
-      await refreshCategories();
+    async function loadCategories() {
+      try {
+        setError(null);
 
-      setIsLoading(false);
+        const data = await getCategories();
+
+        if (!cancelled) {
+          setCategories(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setError(
+            "No se pudieron cargar las categorías.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
     }
 
-    load();
-  }, [refreshCategories]);
+    void loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return {
     categories,
@@ -42,3 +73,4 @@ export function useCategories() {
     refreshCategories,
   };
 }
+
