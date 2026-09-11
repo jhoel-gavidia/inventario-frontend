@@ -1,103 +1,150 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+"use client";
+
+import { Search, SlidersHorizontal, X } from "lucide-react";
+
 import type { Category } from "../types/product";
 
 interface ProductFiltersProps {
   search: string;
   category: string;
+  stockStatus: string;
   status: string;
+
+  categories: Category[];
+
   totalResults: number;
-  categories: Category[] | string[];
+  totalProducts: number;
+
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
+  onStockStatusChange: (value: string) => void;
   onStatusChange: (value: string) => void;
+  onClear: () => void;
 }
 
 export function ProductFilters({
   search,
   category,
+  stockStatus,
   status,
-  totalResults,
   categories,
+  totalResults,
+  totalProducts,
   onSearchChange,
   onCategoryChange,
+  onStockStatusChange,
   onStatusChange,
+  onClear,
 }: ProductFiltersProps) {
+  const hasFilters =
+    search.trim() !== "" ||
+    category !== "ALL" ||
+    stockStatus !== "ALL" ||
+    status !== "ALL";
+
   return (
-    <div className="flex flex-col gap-4 rounded-xl bg-surface-container-lowest p-6 shadow-sm">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
-        <div className="relative md:col-span-6">
+    <section className="rounded-xl border border-surface-container-low bg-surface-container-lowest p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container-low text-secondary">
+            <SlidersHorizontal size={16} />
+          </div>
+
+          <div>
+            <h2 className="text-sm font-semibold text-on-surface">
+              Filtros
+            </h2>
+
+            <p className="text-xs text-secondary">
+              Refina la lista de productos
+            </p>
+          </div>
+        </div>
+
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-secondary transition hover:text-on-surface sm:self-auto"
+          >
+            <X size={14} />
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(260px,2fr)_1fr_1fr_1fr]">
+        <div className="relative">
           <Search
-            size={20}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
+            size={17}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary"
           />
 
           <input
-            type="text"
+            type="search"
             value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Buscar por código (SKU) o nombre de repuesto..."
-            className="w-full rounded-xl bg-surface-container-low py-3 pl-10 pr-4 text-sm text-on-surface outline-none transition-all placeholder:text-secondary focus:bg-white focus:ring-2 focus:ring-primary/30"
+            onChange={(event) =>
+              onSearchChange(event.target.value)
+            }
+            placeholder="Buscar por nombre o código..."
+            className="h-11 w-full rounded-lg border border-surface-container-low bg-white pl-10 pr-4 text-sm text-on-surface outline-none transition placeholder:text-secondary/70 focus:border-primary focus:ring-2 focus:ring-primary/10"
           />
         </div>
 
-        <div className="md:col-span-3">
-          <select
-            value={category}
-            onChange={(event) => onCategoryChange(event.target.value)}
-            className="w-full cursor-pointer rounded-xl bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none transition-all focus:bg-white focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="ALL">
-              Todas las Categorías ({categories.length})
+        <select
+          value={category}
+          onChange={(event) =>
+            onCategoryChange(event.target.value)
+          }
+          className="h-11 rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+        >
+          <option value="ALL">Todas las categorías</option>
+
+          {categories.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.nombre}
             </option>
+          ))}
+        </select>
 
-            {categories.map((item) => {
-              const value = typeof item === "string" ? item : item.id;
-              const label = typeof item === "string" ? item : item.nombre;
+        <select
+          value={stockStatus}
+          onChange={(event) =>
+            onStockStatusChange(event.target.value)
+          }
+          className="h-11 rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+        >
+          <option value="ALL">Todo el stock</option>
+          <option value="IN_STOCK">Con stock</option>
+          <option value="OUT_OF_STOCK">Sin stock</option>
+        </select>
 
-              return (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div className="md:col-span-3">
-          <select
-            value={status}
-            onChange={(event) => onStatusChange(event.target.value)}
-            className="w-full cursor-pointer rounded-xl bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none transition-all focus:bg-white focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="ALL">Todos los Estados</option>
-            <option value="IN_STOCK">Con Stock (Mayor a 0)</option>
-            <option value="OUT_OF_STOCK">
-              Sin Stock (Agotados - 0 u.)
-            </option>
-            <option value="ACTIVO">Estado: ACTIVO</option>
-            <option value="INACTIVO">Estado: INACTIVO</option>
-          </select>
-        </div>
+        <select
+          value={status}
+          onChange={(event) =>
+            onStatusChange(event.target.value)
+          }
+          className="h-11 rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+        >
+          <option value="ALL">Todos los estados</option>
+          <option value="ACTIVE">Activos</option>
+          <option value="INACTIVE">Inactivos</option>
+        </select>
       </div>
 
-      <div className="flex flex-col justify-between gap-2 pt-1 text-sm text-secondary sm:flex-row sm:items-center">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} />
-
-          <span className="font-medium">
-            Mostrando {totalResults} de 284 repuestos
-          </span>
-
-          <span className="hidden font-mono text-[11px] sm:inline">
-            • Taller Jhoelito
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1 font-mono text-[11px]">
-          <span className="h-2 w-2 rounded-full bg-primary" />
-          Sincronizado con BD
-        </div>
+      <div className="mt-4 flex items-center justify-between border-t border-surface-container-low pt-4">
+        <p className="text-xs text-secondary">
+          Mostrando{" "}
+          <span className="font-medium text-on-surface">
+            {totalResults}
+          </span>{" "}
+          de{" "}
+          <span className="font-medium text-on-surface">
+            {totalProducts}
+          </span>{" "}
+          productos
+        </p>
       </div>
-    </div>
+    </section>
   );
 }
