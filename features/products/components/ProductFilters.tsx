@@ -1,11 +1,12 @@
 import { Search, SlidersHorizontal } from "lucide-react";
+import type { Category } from "../types/product";
 
 interface ProductFiltersProps {
   search: string;
   category: string;
   status: string;
   totalResults: number;
-  categories: string[];
+  categories: Category[] | string[];
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onStatusChange: (value: string) => void;
@@ -49,11 +50,16 @@ export function ProductFilters({
               Todas las Categorías ({categories.length})
             </option>
 
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
+            {categories.map((item) => {
+              const value = typeof item === "string" ? item : item.id;
+              const label = typeof item === "string" ? item : item.nombre;
+
+              return (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              );
+            })}
           </select>
         </div>
 

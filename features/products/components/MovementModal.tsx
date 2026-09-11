@@ -8,17 +8,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import type { MovementType, Product } from "../types/product";
+import type { Product } from "../types/product";
+import type { MovementType } from "@/features/movements/types/movement";
 
 interface MovementModalProps {
   open: boolean;
   product: Product | null;
   onClose: () => void;
-  onConfirm: (
-    product: Product,
-    type: MovementType,
-    quantity: number,
-  ) => void;
+  onConfirm: (product: Product, type: MovementType, quantity: number) => void;
 }
 
 export function MovementModal({
@@ -27,8 +24,7 @@ export function MovementModal({
   onClose,
   onConfirm,
 }: MovementModalProps) {
-  const [type, setType] =
-    useState<MovementType>("ENTRADA");
+  const [type, setType] = useState<MovementType>("ENTRADA");
 
   const [quantity, setQuantity] = useState(1);
 
@@ -120,9 +116,7 @@ export function MovementModal({
               min={1}
               type="number"
               value={quantity}
-              onChange={(event) =>
-                setQuantity(Number(event.target.value))
-              }
+              onChange={(event) => setQuantity(Number(event.target.value))}
               className="w-full rounded-xl bg-surface-container-low px-4 py-3 font-mono text-xs outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>

@@ -1,20 +1,25 @@
-export type ProductStatus = "ACTIVO" | "INACTIVO";
-
-export type MovementType = "ENTRADA" | "SALIDA";
-
 export interface Product {
   id: number;
   codigo: string;
   nombre: string;
-  categoria: string;
+  categoriaId: number;
   precioCompra: number;
   precioVenta: number;
   stockActual: number;
-  estado: ProductStatus;
+  estado: boolean;
 }
 
-export interface CategoryDistribution {
+export interface ProductRequest {
+  codigo: string;
   nombre: string;
-  unidades: number;
-  porcentaje: number;
+  categoriaId: number;
+  precioCompra: number;
+  precioVenta: number;
+  stockInicial: number;
+  estado: boolean;
+}
+
+export interface Category {
+  id: number;
+  nombre: string;
 }
