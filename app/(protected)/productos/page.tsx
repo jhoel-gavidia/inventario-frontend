@@ -7,11 +7,15 @@ import { ProductDrawer } from "@/features/products/components/ProductDrawer";
 import { ProductFilters } from "@/features/products/components/ProductFilters";
 import { ProductStats } from "@/features/products/components/ProductStats";
 import { ProductTable } from "@/features/products/components/ProductTable";
+import {
+  createProduct,
+  updateProduct,
+} from "@/features/products/services/product-service";
 import { useProducts } from "@/features/products/hooks/use-products";
 
 import { MovementModal } from "@/features/products/components/MovementModal";
 import type { MovementType } from "@/features/movements/types/movement";
-import type { Product } from "@/features/products/types/product";
+import type { Product, ProductRequest } from "@/features/products/types/product";
 
 const PAGE_SIZE = 10;
 
@@ -71,22 +75,27 @@ export default function ProductosPage() {
     return filteredProducts.slice(start, start + PAGE_SIZE);
   }, [filteredProducts, safeCurrentPage]);
 
+  const activeProducts = useMemo(
+    () => products.filter((product) => product.estado),
+    [products],
+  );
+
   const totalInventoryValue = useMemo(
     () =>
-      products.reduce(
+      activeProducts.reduce(
         (total, product) => total + product.precioCompra * product.stockActual,
         0,
       ),
-    [products],
+    [activeProducts],
   );
 
   const projectedSalesValue = useMemo(
     () =>
-      products.reduce(
+      activeProducts.reduce(
         (total, product) => total + product.precioVenta * product.stockActual,
         0,
       ),
-    [products],
+    [activeProducts],
   );
 
   const outOfStock = useMemo(
@@ -138,7 +147,13 @@ export default function ProductosPage() {
     setMovementOpen(true);
   }
 
-  async function handleSaveProduct() {
+  async function handleSaveProduct(data: ProductRequest) {
+    if (selectedProduct) {
+      await updateProduct(selectedProduct.id, data);
+    } else {
+      await createProduct(data);
+    }
+
     await refreshProducts();
     setDrawerOpen(false);
   }
@@ -166,20 +181,16 @@ export default function ProductosPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-container-low">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px]">
         {/* Header */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Inventario
-            </p>
-
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-on-surface">
+            <h1 className="text-2xl font-semibold tracking-tight">
               Productos
             </h1>
 
-            <p className="mt-1 max-w-2xl text-sm text-secondary">
+            <p className="mt-1 text-sm text-[#737686]">
               Gestiona productos, precios y existencias del inventario.
             </p>
           </div>
@@ -187,14 +198,14 @@ export default function ProductosPage() {
           <button
             type="button"
             onClick={handleCreate}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white transition hover:opacity-90"
+            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-[#dce9ff] px-4 text-sm font-medium text-[#0b1c30] transition hover:bg-[#d3e4fe]"
           >
             <PackagePlus size={17} />
             Nuevo producto
           </button>
-        </header>
+        </div>
 
-        {/* Stats */}
+        {/* KPIs */}
         <ProductStats
           totalProducts={products.length}
           totalCategories={categories.length}
@@ -202,79 +213,91 @@ export default function ProductosPage() {
           inventoryValue={totalInventoryValue}
         />
 
-        {/* Filters */}
-        <ProductFilters
-          search={search}
-          category={category}
-          stockStatus={stockStatus}
-          status={status}
-          categories={categories}
-          totalResults={filteredProducts.length}
-          totalProducts={products.length}
-          onSearchChange={setSearch}
-          onCategoryChange={setCategory}
-          onStockStatusChange={setStockStatus}
-          onStatusChange={setStatus}
-          onClear={handleClearFilters}
-        />
-
-        {/* Table */}
-        {isLoading ? (
-          <div className="rounded-xl border border-surface-container-low bg-surface-container-lowest p-10 text-center text-sm text-secondary">
-            Cargando productos...
-          </div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">
-            {error}
-          </div>
-        ) : (
-          <ProductTable
-            products={paginatedProducts}
+        {/* Filtros */}
+        <div className="mt-6">
+          <ProductFilters
+            search={search}
+            category={category}
+            stockStatus={stockStatus}
+            status={status}
             categories={categories}
-            totalItems={filteredProducts.length}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={PAGE_SIZE}
-            onPageChange={setCurrentPage}
-            onEdit={handleEdit}
-            onMovement={handleMovement}
+            totalResults={filteredProducts.length}
+            totalProducts={products.length}
+            onSearchChange={setSearch}
+            onCategoryChange={setCategory}
+            onStockStatusChange={setStockStatus}
+            onStatusChange={setStatus}
+            onClear={handleClearFilters}
           />
-        )}
+        </div>
+
+        {/* Tabla */}
+        <div className="mt-6">
+          {isLoading ? (
+            <div className="rounded-xl border border-[#e5e7ef] bg-white p-10 text-center text-sm text-[#737686]">
+              Cargando productos...
+            </div>
+          ) : error ? (
+            <div className="rounded-xl border border-[#e5e7ef] bg-white p-6 text-center">
+              <p className="text-sm font-medium text-[#ba1a1a]">{error}</p>
+
+              <button
+                type="button"
+                onClick={() => void refreshProducts()}
+                className="mt-2 text-xs font-medium text-[#2563eb] hover:underline"
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : (
+            <ProductTable
+              products={paginatedProducts}
+              categories={categories}
+              totalItems={filteredProducts.length}
+              currentPage={safeCurrentPage}
+              totalPages={totalPages}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+              onEdit={handleEdit}
+              onMovement={handleMovement}
+            />
+          )}
+        </div>
 
         {/* Resumen inferior */}
-        <section className="grid gap-5 lg:grid-cols-2">
-          <article className="rounded-xl border border-surface-container-low bg-surface-container-lowest p-5">
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <article className="rounded-xl border border-[#e5e7ef] bg-white p-5">
             <div className="mb-5">
-              <h2 className="text-sm font-semibold text-on-surface">
+              <h2 className="font-semibold">
                 Distribución por categoría
               </h2>
 
-              <p className="mt-1 text-xs text-secondary">
+              <p className="mt-1 text-xs text-[#737686]">
                 Stock actual agrupado por categoría
               </p>
             </div>
 
             <div className="space-y-4">
               {categoryDistribution.length === 0 ? (
-                <p className="text-sm text-secondary">
+                <p className="text-sm text-[#737686]">
                   No hay categorías registradas.
                 </p>
               ) : (
                 categoryDistribution.map((item) => (
                   <div key={item.id}>
                     <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-sm text-on-surface">
+                      <span className="text-sm text-[#0b1c30]">
                         {item.nombre}
                       </span>
 
-                      <span className="text-xs text-secondary">
+                      <span className="text-xs text-[#737686]">
                         {item.stock} uds. · {item.percentage}%
                       </span>
                     </div>
 
-                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-low">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[#eff4ff]">
                       <div
-                        className="h-full rounded-full bg-primary"
+                        className="h-full rounded-full bg-[#2563eb]"
                         style={{
                           width: `${item.percentage}%`,
                         }}
@@ -286,22 +309,20 @@ export default function ProductosPage() {
             </div>
           </article>
 
-          <article className="rounded-xl border border-surface-container-low bg-surface-container-lowest p-5">
+          <article className="rounded-xl border border-[#e5e7ef] bg-white p-5">
             <div className="mb-5">
-              <h2 className="text-sm font-semibold text-on-surface">
-                Resumen económico
-              </h2>
+              <h2 className="font-semibold">Resumen económico</h2>
 
-              <p className="mt-1 text-xs text-secondary">
+              <p className="mt-1 text-xs text-[#737686]">
                 Valor actual de las existencias
               </p>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-secondary">Valor de compra</span>
+                <span className="text-sm text-[#737686]">Valor de compra</span>
 
-                <span className="text-sm font-semibold text-on-surface">
+                <span className="text-sm font-semibold text-[#0b1c30]">
                   {new Intl.NumberFormat("es-PE", {
                     style: "currency",
                     currency: "PEN",
@@ -310,11 +331,11 @@ export default function ProductosPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-secondary">
+                <span className="text-sm text-[#737686]">
                   Valor potencial de venta
                 </span>
 
-                <span className="text-sm font-semibold text-on-surface">
+                <span className="text-sm font-semibold text-[#0b1c30]">
                   {new Intl.NumberFormat("es-PE", {
                     style: "currency",
                     currency: "PEN",
@@ -322,13 +343,13 @@ export default function ProductosPage() {
                 </span>
               </div>
 
-              <div className="border-t border-surface-container-low pt-4">
+              <div className="border-t border-[#eef0f5] pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-on-surface">
+                  <span className="text-sm font-medium text-[#0b1c30]">
                     Margen potencial
                   </span>
 
-                  <span className="text-sm font-semibold text-primary">
+                  <span className="text-sm font-semibold text-[#2563eb]">
                     {new Intl.NumberFormat("es-PE", {
                       style: "currency",
                       currency: "PEN",
@@ -341,11 +362,11 @@ export default function ProductosPage() {
         </section>
 
         {/* Auditoría */}
-        <section className="rounded-xl border border-surface-container-low bg-surface-container-lowest p-5">
+        <section className="mt-6 rounded-xl border border-[#e5e7ef] bg-white p-5">
           <div>
-            <h2 className="text-sm font-semibold text-on-surface">Auditoría</h2>
+            <h2 className="font-semibold">Auditoría</h2>
 
-            <p className="mt-1 text-xs text-secondary">
+            <p className="mt-1 text-xs text-[#737686]">
               Las operaciones de inventario se registran automáticamente.
             </p>
           </div>
@@ -353,6 +374,7 @@ export default function ProductosPage() {
       </div>
 
       <ProductDrawer
+        key={selectedProduct?.id ?? "new"}
         open={drawerOpen}
         product={selectedProduct}
         categories={categories}

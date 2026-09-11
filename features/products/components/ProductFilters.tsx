@@ -42,20 +42,21 @@ export function ProductFilters({
     stockStatus !== "ALL" ||
     status !== "ALL";
 
+  const inputClassName =
+    "h-10 w-full rounded-lg border border-[#dfe2ea] bg-white px-3 text-sm text-[#0b1c30] outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10";
+
   return (
-    <section className="rounded-xl border border-surface-container-low bg-surface-container-lowest p-5">
+    <section className="rounded-xl border border-[#e5e7ef] bg-white p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container-low text-secondary">
-            <SlidersHorizontal size={16} />
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+            <SlidersHorizontal size={17} />
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-on-surface">
-              Filtros
-            </h2>
+            <h2 className="font-semibold">Filtros</h2>
 
-            <p className="text-xs text-secondary">
+            <p className="mt-0.5 text-xs text-[#737686]">
               Refina la lista de productos
             </p>
           </div>
@@ -65,7 +66,7 @@ export function ProductFilters({
           <button
             type="button"
             onClick={onClear}
-            className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-secondary transition hover:text-on-surface sm:self-auto"
+            className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-[#737686] transition hover:text-[#0b1c30] sm:self-auto"
           >
             <X size={14} />
             Limpiar filtros
@@ -73,11 +74,11 @@ export function ProductFilters({
         )}
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(260px,2fr)_1fr_1fr_1fr]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(220px,2fr)_1fr_1fr_1fr]">
         <div className="relative">
           <Search
             size={17}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#737686]"
           />
 
           <input
@@ -87,7 +88,7 @@ export function ProductFilters({
               onSearchChange(event.target.value)
             }
             placeholder="Buscar por nombre o código..."
-            className="h-11 w-full rounded-lg border border-surface-container-low bg-white pl-10 pr-4 text-sm text-on-surface outline-none transition placeholder:text-secondary/70 focus:border-primary focus:ring-2 focus:ring-primary/10"
+            className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white pl-9 pr-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#737686] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10"
           />
         </div>
 
@@ -96,7 +97,7 @@ export function ProductFilters({
           onChange={(event) =>
             onCategoryChange(event.target.value)
           }
-          className="h-11 rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+          className={inputClassName}
         >
           <option value="ALL">Todas las categorías</option>
 
@@ -112,7 +113,7 @@ export function ProductFilters({
           onChange={(event) =>
             onStockStatusChange(event.target.value)
           }
-          className="h-11 rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+          className={inputClassName}
         >
           <option value="ALL">Todo el stock</option>
           <option value="IN_STOCK">Con stock</option>
@@ -124,7 +125,7 @@ export function ProductFilters({
           onChange={(event) =>
             onStatusChange(event.target.value)
           }
-          className="h-11 rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+          className={inputClassName}
         >
           <option value="ALL">Todos los estados</option>
           <option value="ACTIVE">Activos</option>
@@ -132,14 +133,14 @@ export function ProductFilters({
         </select>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-surface-container-low pt-4">
-        <p className="text-xs text-secondary">
+      <div className="mt-4 flex items-center justify-between border-t border-[#eef0f5] pt-4">
+        <p className="text-xs text-[#737686]">
           Mostrando{" "}
-          <span className="font-medium text-on-surface">
+          <span className="font-medium text-[#0b1c30]">
             {totalResults}
           </span>{" "}
           de{" "}
-          <span className="font-medium text-on-surface">
+          <span className="font-medium text-[#0b1c30]">
             {totalProducts}
           </span>{" "}
           productos

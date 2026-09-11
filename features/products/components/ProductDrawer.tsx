@@ -1,6 +1,6 @@
 "use client";
 
-import { PackagePlus, Pencil, X } from "lucide-react";
+import { AlertCircle, PackagePlus, Pencil, X } from "lucide-react";
 import { useState } from "react";
 
 import type {
@@ -18,7 +18,7 @@ interface ProductDrawerProps {
 }
 
 const inputClassName =
-  "h-11 w-full rounded-lg border border-surface-container-low bg-white px-3 text-sm text-on-surface outline-none transition placeholder:text-secondary/60 focus:border-primary focus:ring-2 focus:ring-primary/10";
+  "h-11 w-full rounded-lg border border-[#dfe2ea] bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10";
 
 function getInitialForm(product: Product | null): ProductRequest {
   if (!product) {
@@ -58,6 +58,7 @@ export function ProductDrawer({
   );
 
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -78,6 +79,8 @@ export function ProductDrawer({
       ...current,
       [field]: value,
     }));
+
+    setError(null);
   }
 
   async function handleSubmit(
@@ -87,7 +90,10 @@ export function ProductDrawer({
 
     try {
       setIsSaving(true);
+      setError(null);
       await onSave(form);
+    } catch (requestError) {
+      setError(getRequestErrorMessage(requestError));
     } finally {
       setIsSaving(false);
     }
@@ -100,10 +106,10 @@ export function ProductDrawer({
         onClick={onClose}
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-surface-container-low bg-[#F8FAFC]">
-        <header className="flex items-center justify-between border-b border-surface-container-low px-6 py-5">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-[#e5e7ef] bg-[#f8f9ff]">
+        <header className="flex items-center justify-between border-b border-[#eef0f5] px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-secondary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
               {isEditing ? (
                 <Pencil size={18} />
               ) : (
@@ -112,11 +118,11 @@ export function ProductDrawer({
             </div>
 
             <div>
-              <h2 className="text-base font-semibold text-on-surface">
+              <h2 className="text-base font-semibold text-[#0b1c30]">
                 {isEditing ? "Editar producto" : "Nuevo producto"}
               </h2>
 
-              <p className="mt-0.5 text-xs text-secondary">
+              <p className="mt-0.5 text-xs text-[#737686]">
                 {isEditing
                   ? "Actualiza la información del producto"
                   : "Registra un nuevo producto en el inventario"}
@@ -128,7 +134,7 @@ export function ProductDrawer({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-secondary transition hover:bg-surface-container-low hover:text-on-surface"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb]"
           >
             <X size={18} />
           </button>
@@ -142,18 +148,18 @@ export function ProductDrawer({
             <div className="space-y-6">
               <section>
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-on-surface">
+                  <h3 className="text-sm font-semibold text-[#0b1c30]">
                     Información general
                   </h3>
 
-                  <p className="mt-1 text-xs text-secondary">
+                  <p className="mt-1 text-xs text-[#737686]">
                     Datos básicos para identificar el producto.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
                       Código / SKU
                     </label>
 
@@ -170,7 +176,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
                       Nombre
                     </label>
 
@@ -186,7 +192,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
                       Categoría
                     </label>
 
@@ -223,7 +229,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
                       Estado
                     </label>
 
@@ -244,20 +250,20 @@ export function ProductDrawer({
                 </div>
               </section>
 
-              <section className="border-t border-surface-container-low pt-6">
+              <section className="border-t border-[#eef0f5] pt-6">
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-on-surface">
+                  <h3 className="text-sm font-semibold text-[#0b1c30]">
                     Información económica
                   </h3>
 
-                  <p className="mt-1 text-xs text-secondary">
+                  <p className="mt-1 text-xs text-[#737686]">
                     Define los precios de compra y venta.
                   </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
                       Precio de compra
                     </label>
 
@@ -278,7 +284,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
                       Precio de venta
                     </label>
 
@@ -302,20 +308,20 @@ export function ProductDrawer({
                 <div
                   className={`mt-4 rounded-lg border p-3 ${
                     hasNegativeMargin
-                      ? "border-red-100 bg-red-50"
-                      : "border-surface-container-low bg-surface-container-low"
+                      ? "border-[#f2cccc] bg-[#fff7f7]"
+                      : "border-[#eef0f5] bg-[#f8f9ff]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-secondary">
+                    <span className="text-xs text-[#737686]">
                       Margen por unidad
                     </span>
 
                     <span
                       className={`text-sm font-semibold ${
                         hasNegativeMargin
-                          ? "text-red-600"
-                          : "text-primary"
+                          ? "text-[#ba1a1a]"
+                          : "text-[#2563eb]"
                       }`}
                     >
                       S/ {margin.toFixed(2)}
@@ -325,8 +331,8 @@ export function ProductDrawer({
                   <p
                     className={`mt-1 text-xs ${
                       hasNegativeMargin
-                        ? "text-red-600"
-                        : "text-secondary"
+                        ? "text-[#ba1a1a]"
+                        : "text-[#737686]"
                     }`}
                   >
                     {hasNegativeMargin
@@ -343,13 +349,13 @@ export function ProductDrawer({
               </section>
 
               {!isEditing && (
-                <section className="border-t border-surface-container-low pt-6">
+                <section className="border-t border-[#eef0f5] pt-6">
                   <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-on-surface">
+                    <h3 className="text-sm font-semibold text-[#0b1c30]">
                       Stock inicial
                     </h3>
 
-                    <p className="mt-1 text-xs text-secondary">
+                    <p className="mt-1 text-xs text-[#737686]">
                       Cantidad disponible al registrar el producto.
                     </p>
                   </div>
@@ -371,14 +377,22 @@ export function ProductDrawer({
                 </section>
               )}
             </div>
+
+            {error && (
+              <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+
+                <p>{error}</p>
+              </div>
+            )}
           </div>
 
-          <footer className="flex items-center justify-end gap-3 border-t border-surface-container-low bg-[#F8FAFC] px-6 py-4">
+          <footer className="flex items-center justify-end gap-3 border-t border-[#eef0f5] bg-[#f8f9ff] px-6 py-4">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="h-10 rounded-lg border border-surface-container-low bg-white px-4 text-sm font-medium text-secondary transition hover:bg-surface-container-low disabled:opacity-50"
+              className="h-10 rounded-lg border border-[#dfe2ea] bg-white px-4 text-sm font-medium text-[#434655] transition hover:bg-[#f8f9ff] disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -386,7 +400,7 @@ export function ProductDrawer({
             <button
               type="submit"
               disabled={isSaving}
-              className="h-10 rounded-lg bg-primary px-5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-10 rounded-lg bg-[#2563eb] px-5 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSaving
                 ? "Guardando..."
@@ -399,4 +413,32 @@ export function ProductDrawer({
       </aside>
     </div>
   );
+}
+
+function getRequestErrorMessage(error: unknown): string {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error
+  ) {
+    const response = (
+      error as {
+        response?: {
+          data?: {
+            message?: string;
+          };
+        };
+      }
+    ).response;
+
+    if (response?.data?.message) {
+      return response.data.message;
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "No se pudo guardar el producto. Inténtalo nuevamente.";
 }

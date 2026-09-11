@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface ProductPaginationProps {
   currentPage: number;
@@ -62,14 +62,14 @@ export function ProductPagination({
   const canNext = currentPage < totalPages;
 
   return (
-    <div className="flex flex-col gap-4 border-t border-surface-container-low bg-surface-container-lowest px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-secondary">
+    <div className="flex flex-col gap-4 border-t border-[#eef0f5] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs text-[#737686]">
         Mostrando{" "}
-        <span className="font-medium text-on-surface">
+        <span className="font-medium text-[#0b1c30]">
           {firstItem}-{lastItem}
         </span>{" "}
         de{" "}
-        <span className="font-medium text-on-surface">
+        <span className="font-medium text-[#0b1c30]">
           {totalItems}
         </span>{" "}
         productos
@@ -85,9 +85,9 @@ export function ProductPagination({
             onClick={() => onPageChange(currentPage - 1)}
             disabled={!canPrevious}
             aria-label="Página anterior"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-container-low bg-white text-secondary transition hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-[#e5e7ef] text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ChevronLeft size={17} />
+            <ArrowLeft size={15} />
           </button>
 
           <div className="hidden items-center gap-1 sm:flex">
@@ -95,7 +95,7 @@ export function ProductPagination({
               typeof page === "string" ? (
                 <span
                   key={`${page}-${index}`}
-                  className="flex h-9 w-9 items-center justify-center text-sm text-secondary"
+                  className="flex h-8 w-8 items-center justify-center text-xs text-[#737686]"
                 >
                   ...
                 </span>
@@ -105,10 +105,10 @@ export function ProductPagination({
                   type="button"
                   onClick={() => onPageChange(page)}
                   aria-current={currentPage === page ? "page" : undefined}
-                  className={`h-9 min-w-9 rounded-lg px-2 text-sm font-medium transition ${
+                  className={`h-8 min-w-8 rounded-md px-2 text-xs font-medium transition ${
                     currentPage === page
-                      ? "bg-primary text-white"
-                      : "text-secondary hover:bg-surface-container-low hover:text-on-surface"
+                      ? "bg-[#2563eb] text-white"
+                      : "text-[#434655] hover:bg-[#f8f9ff] hover:text-[#0b1c30]"
                   }`}
                 >
                   {page}
@@ -117,7 +117,7 @@ export function ProductPagination({
             )}
           </div>
 
-          <span className="px-2 text-sm font-medium text-on-surface sm:hidden">
+          <span className="px-2 text-xs font-medium text-[#434655] sm:hidden">
             {currentPage} / {totalPages}
           </span>
 
@@ -126,9 +126,9 @@ export function ProductPagination({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={!canNext}
             aria-label="Página siguiente"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-container-low bg-white text-secondary transition hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-[#e5e7ef] text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ChevronRight size={17} />
+            <ArrowRight size={15} />
           </button>
         </nav>
       )}
