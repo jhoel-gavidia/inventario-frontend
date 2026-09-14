@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
-import { getCategories } from "@/features/categories/services/category-service";
-import { getProducts } from "@/features/products/services/product-service";
-import { getMovements } from "@/features/movements/services/movement-service";
+import { useProducts } from "@/features/products/hooks/use-products";
+import { useCategories } from "@/features/categories/hooks/use-categories";
+import { useMovements } from "@/features/movements/hooks/use-movements";
 
 import type { Product } from "@/features/products/types/product";
 import type { Category } from "../../categories/types/category";
@@ -12,19 +10,6 @@ import type { Category } from "../../categories/types/category";
 import type { Movement } from "@/features/movements/types/movement";
 
 import type { DashboardStats } from "../types/dashboard";
-
-const INITIAL_STATS: DashboardStats = {
-  totalProducts: 0,
-  totalStock: 0,
-  totalEntries: 0,
-  totalExits: 0,
-  productsInStock: 0,
-  productsOutOfStock: 0,
-  inactiveProducts: 0,
-  categoryStats: [],
-  attentionProducts: [],
-  recentMovements: [],
-};
 
 function buildDashboardStats(
   products: Product[],
@@ -127,66 +112,34 @@ function buildDashboardStats(
   };
 }
 
-async function fetchDashboard(): Promise<DashboardStats> {
-  const [products, categories, movements] = await Promise.all([
-    getProducts(),
-    getCategories(),
-    getMovements(),
-  ]);
-
-  return buildDashboardStats(products, categories, movements);
-}
-
 export function useDashboard() {
-  const [stats, setStats] = useState<DashboardStats>(INITIAL_STATS);
+  const productsQuery = useProducts();
+  const categoriesQuery = useCategories();
+  const movementsQuery = useMovements();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const stats = buildDashboardStats(
+    productsQuery.products,
+    categoriesQuery.categories,
+    movementsQuery.movements,
+  );
 
-  const [error, setError] = useState<string | null>(null);
+  const isLoading =
+    productsQuery.isLoading ||
+    categoriesQuery.isLoading ||
+    movementsQuery.isLoading;
 
-  const refreshDashboard = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const error =
+    productsQuery.error || categoriesQuery.error || movementsQuery.error
+      ? "No se pudo cargar el resumen del inventario."
+      : null;
 
-    try {
-      const data = await fetchDashboard();
-
-      setStats(data);
-    } catch {
-      setError("No se pudo cargar el resumen del inventario.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadDashboard() {
-      try {
-        const data = await fetchDashboard();
-
-        if (!cancelled) {
-          setStats(data);
-          setError(null);
-        }
-      } catch {
-        if (!cancelled) {
-          setError("No se pudo cargar el resumen del inventario.");
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadDashboard();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const refreshDashboard = async () => {
+    await Promise.all([
+      productsQuery.refreshProducts(),
+      categoriesQuery.refreshCategories(),
+      movementsQuery.refreshMovements(),
+    ]);
+  };
 
   return {
     stats,

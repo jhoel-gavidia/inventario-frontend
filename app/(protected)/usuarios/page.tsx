@@ -10,12 +10,9 @@ import { UserRolesSummary } from "@/features/users/components/UserRolesSummary";
 import { UserStats } from "@/features/users/components/UserStats";
 import { UserTable } from "@/features/users/components/UserTable";
 
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useUsers } from "@/features/users/hooks/use-users";
 
-import {
-  createUser,
-  updateUser,
-} from "@/features/users/services/user-service";
+import { useSaveUser } from "@/features/users/hooks/use-save-user";
 
 import type {
   User,
@@ -30,6 +27,8 @@ export default function UsuariosPage() {
     error,
     refreshUsers,
   } = useUsers();
+
+  const { saveUser } = useSaveUser();
 
   const [selectedUser, setSelectedUser] =
     useState<User | null>(null);
@@ -56,18 +55,10 @@ export default function UsuariosPage() {
     data: UserRequest | UserUpdateRequest,
   ) {
     try {
-      if (selectedUser) {
-        await updateUser(
-          selectedUser.id,
-          data as UserUpdateRequest,
-        );
-      } else {
-        await createUser(
-          data as UserRequest,
-        );
-      }
-
-      await refreshUsers();
+      await saveUser({
+        user: selectedUser,
+        data,
+      });
 
       setSelectedUser(null);
       setIsFormOpen(false);
@@ -87,13 +78,14 @@ export default function UsuariosPage() {
     user: User,
   ): Promise<void> {
     try {
-      await updateUser(user.id, {
-        username: user.username,
-        rol: user.rol,
-        estado: !user.estado,
+      await saveUser({
+        user,
+        data: {
+          username: user.username,
+          rol: user.rol,
+          estado: !user.estado,
+        },
       });
-
-      await refreshUsers();
     } catch (error) {
       throw new Error(
         getApiErrorMessage(
