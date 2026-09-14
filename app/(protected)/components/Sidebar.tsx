@@ -45,7 +45,7 @@ const menuItems = [
   },
   {
     label: "Auditoría",
-    href: "/auditoria",
+    href: "/auditorias",
     icon: ShieldCheck,
     admin: true,
   },

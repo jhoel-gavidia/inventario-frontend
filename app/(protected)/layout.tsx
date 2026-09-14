@@ -7,7 +7,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 
-const ADMIN_ROUTES = new Set(["/usuarios"]);
+const ADMIN_ROUTES = new Set(["/usuarios", "/auditorias"]);
 
 interface ProtectedLayoutProps {
   children: ReactNode;
