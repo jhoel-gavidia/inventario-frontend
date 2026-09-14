@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/axios";
-import type { Category } from "../types/product";
+import type { Category } from "../../products/types/product";
 
 export interface CategoryRequest {
   nombre: string;

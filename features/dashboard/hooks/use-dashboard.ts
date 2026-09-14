@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { getCategories } from "@/features/products/services/category-service";
+import { getCategories } from "@/features/categories/services/category-service";
 import { getProducts } from "@/features/products/services/product-service";
 import { getMovements } from "@/features/movements/services/movement-service";
 

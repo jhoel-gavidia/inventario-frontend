@@ -12,7 +12,7 @@ import {
   getApiErrorMessage,
   isServerValidationError,
 } from "@/lib/api/errors";
-import type { Category } from "../types/product";
+import type { Category } from "../../products/types/product";
 import type { CategoryRequest } from "../services/category-service";
 
 interface CategoryFormProps {

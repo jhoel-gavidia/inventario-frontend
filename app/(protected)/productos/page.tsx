@@ -12,7 +12,7 @@ import {
   updateProduct,
 } from "@/features/products/services/product-service";
 import { useProducts } from "@/features/products/hooks/use-products";
-import { useCategories } from "@/features/products/hooks/use-categories";
+import { useCategories } from "@/features/categories/hooks/use-categories";
 
 import { MovementModal } from "@/features/products/components/MovementModal";
 import type { MovementType } from "@/features/movements/types/movement";

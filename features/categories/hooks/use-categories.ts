@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "../services/category-service";
-import type { Category } from "../types/product";
+import type { Category } from "../../products/types/product";
 
 export const categoriesQueryKey = ["categorias"] as const;
 

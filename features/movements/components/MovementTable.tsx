@@ -153,7 +153,7 @@ export function MovementTable({ movements }: MovementTableProps) {
 
         {/* TABLE */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left">
+          <table className="w-full min-w-175 text-left">
             <thead className="border-b border-[#dce9ff] bg-[#f8f9ff]">
               <tr className="text-xs font-semibold uppercase tracking-wide text-[#565e74]">
                 <th className="px-5 py-3">ID</th>
@@ -190,7 +190,7 @@ export function MovementTable({ movements }: MovementTableProps) {
                   </td>
 
                   <td className="px-5 py-4">
-                    <div className="flex min-w-[220px] flex-col gap-1">
+                    <div className="flex min-w-55 flex-col gap-1">
                       {movement.detalles.map((detail) => (
                         <div
                           key={`${movement.id}-${detail.productoId}`}

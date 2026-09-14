@@ -15,14 +15,14 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { CategoryForm } from "@/features/products/components/CategoryForm";
+import { CategoryForm } from "@/features/categories/components/CategoryForm";
 import {
   createCategory,
   deleteCategory,
   updateCategory,
   type CategoryRequest,
-} from "@/features/products/services/category-service";
-import { useCategories } from "@/features/products/hooks/use-categories";
+} from "@/features/categories/services/category-service";
+import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProducts } from "@/features/products/hooks/use-products";
 import type { Category } from "@/features/products/types/product";
 
