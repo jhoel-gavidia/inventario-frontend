@@ -31,7 +31,7 @@ export function Header() {
       {/* Acciones */}
       <div className="flex items-center gap-3">
         {/* Buscar */}
-        <div className="hidden min-w-[280px] items-center gap-2 rounded-lg border border-slate-200/80 bg-surface-container-low px-3 py-1.5 text-on-surface-variant transition-colors focus-within:border-primary md:flex">
+        <div className="hidden min-w-70 items-center gap-2 rounded-lg border border-slate-200/80 bg-surface-container-low px-3 py-1.5 text-on-surface-variant transition-colors focus-within:border-primary md:flex">
           <Search size={18} className="text-slate-400" />
 
           <input
