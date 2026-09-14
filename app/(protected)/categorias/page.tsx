@@ -2,6 +2,7 @@
 
 import {
   ArrowUpRight,
+  ChevronDown,
   Download,
   Package,
   Pencil,
@@ -13,6 +14,7 @@ import {
 import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
+import { getApiErrorMessage } from "@/lib/api/errors";
 import { CategoryForm } from "@/features/products/components/CategoryForm";
 import {
   createCategory,
@@ -43,6 +45,7 @@ export default function CategoriasPage() {
     useState<Category | null>(null);
 
   const [search, setSearch] = useState("");
+  const [exportOpen, setExportOpen] = useState(false);
 
   const isLoading = categoriesLoading || productsLoading;
 
@@ -155,28 +158,25 @@ export default function CategoriasPage() {
 
       await refreshCategories();
     } catch (error) {
-      console.error(error);
-
       alert(
-        "No se pudo eliminar la categoría. Puede que tenga productos asociados.",
+        getApiErrorMessage(
+          error,
+          "No se pudo eliminar la categoría. Puede que tenga productos asociados.",
+        ),
       );
     }
   }
 
-  function handleExport() {
-    if (categories.length === 0) {
-      return;
-    }
-
+  function buildCSV(target: Category[]): string {
     const headers = ["ID", "Nombre", "Repuestos Asociados"];
 
-    const rows = categories.map((category) => [
+    const rows = target.map((category) => [
       category.id,
       category.nombre,
       getProductCount(category.id),
     ]);
 
-    const csv = [
+    return [
       headers.join(","),
       ...rows.map((row) =>
         row
@@ -187,8 +187,10 @@ export default function CategoriasPage() {
           .join(","),
       ),
     ].join("\n");
+  }
 
-    const blob = new Blob([csv], {
+  function downloadCSV(target: Category[], filename: string) {
+    const blob = new Blob([buildCSV(target)], {
       type: "text/csv;charset=utf-8;",
     });
 
@@ -196,13 +198,23 @@ export default function CategoriasPage() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "categorias.csv";
+    link.download = filename;
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function handleExportAll() {
+    downloadCSV(categories, "categorias.csv");
+    setExportOpen(false);
+  }
+
+  function handleExportFiltered() {
+    downloadCSV(filteredCategories, "categorias-filtradas.csv");
+    setExportOpen(false);
   }
 
   return (
@@ -220,15 +232,70 @@ export default function CategoriasPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={categories.length === 0}
-            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-[#dce9ff] px-4 text-sm font-medium text-[#0b1c30] transition hover:bg-[#d3e4fe] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Download size={17} />
-            Exportar
-          </button>
+          <div className="relative self-start">
+            <button
+              type="button"
+              onClick={() => setExportOpen((open) => !open)}
+              disabled={categories.length === 0}
+              aria-haspopup="menu"
+              aria-expanded={exportOpen}
+              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#dce9ff] px-4 text-sm font-medium text-[#0b1c30] transition hover:bg-[#d3e4fe] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download size={17} />
+              Exportar
+              <ChevronDown
+                size={15}
+                className={`transition-transform ${
+                  exportOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {exportOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setExportOpen(false)}
+                />
+
+                <div
+                  role="menu"
+                  className="absolute right-0 z-40 mt-2 w-64 rounded-xl border border-[#e5e7ef] bg-white p-1.5 shadow-lg"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleExportAll}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-[#f5f7ff]"
+                  >
+                    <span className="text-sm font-medium">
+                      Exportar todo
+                    </span>
+
+                    <span className="rounded-full bg-[#eff4ff] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#2563eb]">
+                      {categories.length}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleExportFiltered}
+                    disabled={filteredCategories.length === 0}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-[#f5f7ff] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span className="text-sm font-medium">
+                      Exportar resultados
+                    </span>
+
+                    <span className="rounded-full bg-[#eff4ff] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#2563eb]">
+                      {filteredCategories.length}
+                    </span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* KPIs */}
@@ -426,6 +493,7 @@ export default function CategoriasPage() {
                                     )
                                   }
                                   title="Editar categoría"
+                                  aria-label={`Editar ${category.nombre}`}
                                   className="rounded-lg p-2 text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb]"
                                 >
                                   <Pencil size={16} />
@@ -439,6 +507,7 @@ export default function CategoriasPage() {
                                     )
                                   }
                                   title="Eliminar categoría"
+                                  aria-label={`Eliminar ${category.nombre}`}
                                   className="rounded-lg p-2 text-[#737686] transition hover:bg-[#fff1f1] hover:text-[#ba1a1a]"
                                 >
                                   <Trash2 size={16} />

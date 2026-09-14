@@ -1,60 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getMovements } from "../services/movement-service";
 import type { Movement } from "../types/movement";
 
-export function useMovements() {
-  const [movements, setMovements] = useState<Movement[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const movementsQueryKey = ["movimientos"] as const;
 
-  const refreshMovements = useCallback(async () => {
-    try {
-      setError(null);
+function getQueryError(error: unknown): string | null {
+  if (!error) {
+    return null;
+  }
 
-      const data = await getMovements();
+  return "No se pudieron cargar los movimientos.";
+}
 
-      setMovements(data);
-    } catch {
-      setError("No se pudieron cargar los movimientos.");
-    }
-  }, []);
+interface UseMovementsReturn {
+  movements: Movement[];
+  isLoading: boolean;
+  error: string | null;
+  refreshMovements: () => Promise<void>;
+}
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadMovements() {
-      try {
-        setError(null);
-
-        const data = await getMovements();
-
-        if (!cancelled) {
-          setMovements(data);
-        }
-      } catch {
-        if (!cancelled) {
-          setError("No se pudieron cargar los movimientos.");
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadMovements();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+export function useMovements(): UseMovementsReturn {
+  const query = useQuery({
+    queryKey: movementsQueryKey,
+    queryFn: getMovements,
+    retry: false,
+  });
 
   return {
-    movements,
-    isLoading,
-    error,
-    refreshMovements,
+    movements: query.data ?? [],
+    isLoading: query.isLoading,
+    error: getQueryError(query.error),
+    refreshMovements: async () => {
+      await query.refetch();
+    },
   };
 }

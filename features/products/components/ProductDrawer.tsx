@@ -3,6 +3,7 @@
 import { AlertCircle, PackagePlus, Pencil, X } from "lucide-react";
 import { useState } from "react";
 
+import { getApiErrorMessage } from "@/lib/api/errors";
 import type {
   Category,
   Product,
@@ -93,7 +94,12 @@ export function ProductDrawer({
       setError(null);
       await onSave(form);
     } catch (requestError) {
-      setError(getRequestErrorMessage(requestError));
+      setError(
+        getApiErrorMessage(
+          requestError,
+          "No se pudo guardar el producto. Inténtalo nuevamente.",
+        ),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -413,32 +419,4 @@ export function ProductDrawer({
       </aside>
     </div>
   );
-}
-
-function getRequestErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error
-  ) {
-    const response = (
-      error as {
-        response?: {
-          data?: {
-            message?: string;
-          };
-        };
-      }
-    ).response;
-
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "No se pudo guardar el producto. Inténtalo nuevamente.";
 }

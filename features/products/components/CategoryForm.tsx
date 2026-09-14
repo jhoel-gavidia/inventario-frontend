@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import {
+  getApiErrorMessage,
+  isServerValidationError,
+} from "@/lib/api/errors";
 import type { Category } from "../types/product";
 import type { CategoryRequest } from "../services/category-service";
 
@@ -29,7 +33,8 @@ export function CategoryForm({
   );
 
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const isEditing = category !== null;
   const normalizedName = nombre.trim();
@@ -38,6 +43,11 @@ export function CategoryForm({
     normalizedName.length === 0 ||
     normalizedName.length > 50 ||
     isSaving;
+
+  function clearErrors() {
+    setFieldError(null);
+    setServerError(null);
+  }
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -50,15 +60,27 @@ export function CategoryForm({
 
     try {
       setIsSaving(true);
-      setError(null);
+      clearErrors();
 
       await onSave({
         nombre: normalizedName,
       });
     } catch (requestError) {
-      setError(
-        getRequestErrorMessage(requestError),
-      );
+      if (isServerValidationError(requestError)) {
+        setFieldError(
+          getApiErrorMessage(
+            requestError,
+            "El nombre de la categoría no es válido.",
+          ),
+        );
+      } else {
+        setServerError(
+          getApiErrorMessage(
+            requestError,
+            "No se pudo conectar con el servidor.",
+          ),
+        );
+      }
     } finally {
       setIsSaving(false);
     }
@@ -66,14 +88,21 @@ export function CategoryForm({
 
   function handleReset() {
     setNombre(category?.nombre ?? "");
-    setError(null);
+    clearErrors();
     onReset();
   }
 
   function handleCancel() {
-    setError(null);
+    clearErrors();
     onCancel();
   }
+
+  const inputClassName =
+    "h-10 w-full rounded-lg border bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:ring-2 disabled:cursor-not-allowed disabled:bg-[#f3f4f7]";
+
+  const inputBorderClassName = fieldError
+    ? "border-[#d38a8a] focus:border-[#ba1a1a] focus:ring-[#ba1a1a]/10"
+    : "border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10";
 
   return (
     <div className="sticky top-6">
@@ -106,6 +135,7 @@ export function CategoryForm({
               onClick={handleReset}
               disabled={isSaving}
               title="Restablecer formulario"
+              aria-label="Restablecer formulario"
               className="rounded-lg p-2 text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <RefreshCw size={17} />
@@ -138,28 +168,45 @@ export function CategoryForm({
               value={nombre}
               onChange={(event) => {
                 setNombre(event.target.value);
-                setError(null);
+                clearErrors();
               }}
               placeholder="Ej. Sistema Eléctrico"
               maxLength={50}
               disabled={isSaving}
               autoComplete="off"
-              className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 disabled:cursor-not-allowed disabled:bg-[#f3f4f7]"
+              aria-invalid={fieldError !== null}
+              aria-describedby={
+                fieldError ? "category-name-error" : undefined
+              }
+              className={`${inputClassName} ${inputBorderClassName}`}
             />
 
-            <p className="mt-1.5 text-xs text-[#737686]">
-              Usa un nombre claro y fácil de identificar.
-            </p>
+            {fieldError ? (
+              <p
+                id="category-name-error"
+                className="mt-1.5 flex items-start gap-1 text-xs text-[#ba1a1a]"
+              >
+                <AlertCircle
+                  size={14}
+                  className="mt-0.5 shrink-0"
+                />
+                {fieldError}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-xs text-[#737686]">
+                Usa un nombre claro y fácil de identificar.
+              </p>
+            )}
           </div>
 
-          {error && (
+          {serverError && (
             <div className="flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
               <AlertCircle
                 size={16}
                 className="mt-0.5 shrink-0"
               />
 
-              <p>{error}</p>
+              <p>{serverError}</p>
             </div>
           )}
 
@@ -200,34 +247,3 @@ export function CategoryForm({
     </div>
   );
 }
-
-function getRequestErrorMessage(
-  error: unknown,
-): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error
-  ) {
-    const response = (
-      error as {
-        response?: {
-          data?: {
-            message?: string;
-          };
-        };
-      }
-    ).response;
-
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "No se pudo guardar la categoría. Inténtalo nuevamente.";
-}
-
