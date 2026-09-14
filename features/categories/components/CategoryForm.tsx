@@ -12,8 +12,8 @@ import {
   getApiErrorMessage,
   isServerValidationError,
 } from "@/lib/api/errors";
-import type { Category } from "../../products/types/product";
-import type { CategoryRequest } from "../services/category-service";
+import type { Category } from "../../categories/types/category";
+import type { CategoryRequest } from "../types/category";
 
 interface CategoryFormProps {
   category: Category | null;

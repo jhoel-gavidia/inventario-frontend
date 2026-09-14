@@ -5,10 +5,11 @@ import { useState } from "react";
 
 import { getApiErrorMessage } from "@/lib/api/errors";
 import type {
-  Category,
   Product,
   ProductRequest,
 } from "../types/product";
+
+import type { Category } from "../../categories/types/category";
 
 interface ProductDrawerProps {
   open: boolean;

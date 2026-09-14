@@ -1,4 +1,5 @@
-import type { Category, Product } from "@/features/products/types/product";
+import type { Product } from "@/features/products/types/product";
+import type { Category } from "../../categories/types/category";
 import type { Movement } from "@/features/movements/types/movement";
 
 export interface CategoryStat {
