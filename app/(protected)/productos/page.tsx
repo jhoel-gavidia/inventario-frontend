@@ -12,6 +12,7 @@ import {
   updateProduct,
 } from "@/features/products/services/product-service";
 import { useProducts } from "@/features/products/hooks/use-products";
+import { useCategories } from "@/features/products/hooks/use-categories";
 
 import { MovementModal } from "@/features/products/components/MovementModal";
 import type { MovementType } from "@/features/movements/types/movement";
@@ -20,8 +21,25 @@ import type { Product, ProductRequest } from "@/features/products/types/product"
 const PAGE_SIZE = 10;
 
 export default function ProductosPage() {
-  const { products, categories, isLoading, error, refreshProducts } =
-    useProducts();
+  const {
+    products,
+    isLoading: isLoadingProducts,
+    error: productsError,
+    refreshProducts,
+  } = useProducts();
+  const {
+    categories,
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+    refreshCategories,
+  } = useCategories();
+
+  const isLoading = isLoadingProducts || isLoadingCategories;
+  const error = productsError ?? categoriesError;
+
+  async function handleRetry() {
+    await Promise.all([refreshProducts(), refreshCategories()]);
+  }
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("ALL");
@@ -243,7 +261,7 @@ export default function ProductosPage() {
 
               <button
                 type="button"
-                onClick={() => void refreshProducts()}
+                onClick={() => void handleRetry()}
                 className="mt-2 text-xs font-medium text-[#2563eb] hover:underline"
               >
                 Reintentar

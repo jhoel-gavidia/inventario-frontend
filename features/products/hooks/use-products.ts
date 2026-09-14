@@ -1,16 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import {
-  getProducts,
-  deleteProduct,
-} from "../services/product-service";
-import { getCategories } from "../services/category-service";
-import type { Product, Category } from "../types/product";
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { deleteProduct, getProducts } from "../services/product-service";
+import type { Product } from "../types/product";
+
+export const productsQueryKey = ["productos"] as const;
+
+function getQueryError(error: unknown): string | null {
+  if (!error) {
+    return null;
+  }
+
+  return "No se pudieron cargar los productos.";
+}
 
 interface UseProductsReturn {
   products: Product[];
-  categories: Category[];
   isLoading: boolean;
   error: string | null;
   refreshProducts: () => Promise<void>;
@@ -18,51 +27,26 @@ interface UseProductsReturn {
 }
 
 export function useProducts(): UseProductsReturn {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const loadAll = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const query = useQuery({
+    queryKey: productsQueryKey,
+    queryFn: getProducts,
+    retry: false,
+  });
 
-    try {
-      const [productsData, categoriesData] = await Promise.all([
-        getProducts(),
-        getCategories(),
-      ]);
-
-      setProducts(productsData);
-      setCategories(categoriesData);
-    } catch {
-      setError("No se pudieron cargar los productos.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch inicial en mount, no es una cascada de renders
-    void loadAll();
-  }, [loadAll]);
-
-  const removeProduct = async (id: number) => {
-    try {
-      setError(null);
-      await deleteProduct(id);
-      await loadAll();
-    } catch {
-      setError("No se pudo eliminar el producto.");
-    }
-  };
+  const removeProductMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+  });
 
   return {
-    products,
-    categories,
-    isLoading,
-    error,
-    refreshProducts: loadAll,
-    removeProduct,
+    products: query.data ?? [],
+    isLoading: query.isLoading,
+    error: getQueryError(query.error),
+    refreshProducts: () =>
+      queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+    removeProduct: (id) => removeProductMutation.mutateAsync(id),
   };
 }
