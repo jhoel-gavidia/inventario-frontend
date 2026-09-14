@@ -1,237 +1,215 @@
-import { ArrowLeftRight, Edit3 } from "lucide-react";
-import type { Product, Category } from "../types/product";
-import type { MovementType } from "@/features/movements/types/movement";
+"use client";
+
+import { ArrowLeftRight, Edit3, PackageOpen } from "lucide-react";
+import { useMemo } from "react";
+import type { Category } from "@/features/categories/types/category";
+import type { Product } from "../types/product";
+
+import { ProductPagination } from "./ProductPagination";
+
 interface ProductTableProps {
   products: Product[];
   categories: Category[];
+
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+
+  onPageChange: (page: number) => void;
   onEdit: (product: Product) => void;
-  onMovement: (product: Product, type: MovementType) => void;
+  onMovement: (product: Product) => void;
 }
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency: "PEN",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
+
+const currencyFormatter = new Intl.NumberFormat("es-PE", {
+  style: "currency",
+  currency: "PEN",
+});
+
 export function ProductTable({
   products,
   categories,
+  totalItems,
+  currentPage,
+  totalPages,
+  pageSize,
+  onPageChange,
   onEdit,
   onMovement,
 }: ProductTableProps) {
-  function getCategoryName(categoriaId: number) {
-    return (
-      categories.find((category) => category.id === categoriaId)?.nombre ??
-      "Sin categoría"
-    );
-  }
+  const categoryMap = useMemo(
+    () =>
+      new Map(
+        categories.map((category) => [category.id, category.nombre])
+      ),
+    [categories]
+  );
+
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm">
-      
+    <section className="overflow-hidden rounded-xl border border-line bg-white">
       <div className="overflow-x-auto">
-        
-        <table className="w-full border-collapse text-left">
-          
+        <table className="w-full min-w-230 text-left">
           <thead>
-            
-            <tr className="bg-surface-container-low font-mono text-[11px] uppercase tracking-wider text-secondary">
-              
-              <th className="px-6 py-4 font-semibold"> Código SKU </th>
-              <th className="px-6 py-4 font-semibold"> Repuesto / Nombre </th>
-              <th className="px-6 py-4 font-semibold"> Categoría </th>
-              <th className="px-6 py-4 text-right font-semibold">
-                
-                Costo Compra
+            <tr className="border-b border-line-soft text-xs uppercase tracking-wide text-outline">
+              <th className="px-5 py-3 font-medium">SKU</th>
+
+              <th className="px-5 py-3 font-medium">Repuesto</th>
+
+              <th className="px-5 py-3 font-medium">Categoría</th>
+
+              <th className="px-5 py-3 text-right font-medium">
+                Compra
               </th>
-              <th className="px-6 py-4 text-right font-semibold">
-                
-                Precio Venta
+
+              <th className="px-5 py-3 text-right font-medium">
+                Venta
               </th>
-              <th className="px-6 py-4 text-center font-semibold">
-                
+
+              <th className="px-5 py-3 text-center font-medium">
                 Stock
               </th>
-              <th className="px-6 py-4 text-center font-semibold">
-                
+
+              <th className="px-5 py-3 text-center font-medium">
                 Estado
               </th>
-              <th className="px-6 py-4 text-right font-semibold">
-                
+
+              <th className="px-5 py-3 text-right font-medium">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="text-sm text-on-surface">
-            
-            {products.map((product) => (
-              <tr
-                key={product.id}
-                className={`border-b border-surface-container-low transition-colors hover:bg-surface-container-low/60 ${!product.estado ? "opacity-70" : ""}`}
-              >
-                
-                {/* Código */}
-                <td className="whitespace-nowrap px-6 py-4">
-                  
-                  <span
-                    className={`rounded bg-surface-container px-2 py-1 font-mono text-[11px] font-bold ${product.estado ? "text-primary" : "text-secondary"}`}
-                  >
-                    
-                    {product.codigo}
-                  </span>
-                </td>
-                {/* Nombre */}
-                <td className="min-w-70 px-6 py-4">
-                  
-                  <span className="font-semibold leading-tight">
-                    
-                    {product.nombre}
-                  </span>
-                </td>
-                {/* Categoría */}
-                <td className="whitespace-nowrap px-6 py-4">
-                  
-                  <span className="rounded bg-surface-container px-3 py-1 text-xs font-medium">
-                    
-                    {getCategoryName(product.categoriaId)}
-                  </span>
-                </td>
-                {/* Precio compra */}
-                <td className="whitespace-nowrap px-6 py-4 text-right font-mono text-xs text-secondary">
-                  
-                  {formatCurrency(product.precioCompra)}
-                </td>
-                {/* Precio venta */}
-                <td className="whitespace-nowrap px-6 py-4 text-right font-mono text-xs font-bold">
-                  
-                  {formatCurrency(product.precioVenta)}
-                </td>
-                {/* Stock */}
-                <td className="whitespace-nowrap px-6 py-4 text-center">
-                  
-                  {product.stockActual === 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 font-mono text-[11px] font-bold text-red-600">
-                      
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-600" /> 0
-                      u. Agotado
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1 font-mono text-[11px] font-bold text-primary">
-                      
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      {product.stockActual} u.
-                    </span>
-                  )}
-                </td>
-                {/* Estado */}
-                <td className="whitespace-nowrap px-6 py-4 text-center">
-                  
-                  <span
-                    className={`rounded px-3 py-1 font-mono text-[11px] font-semibold ${product.estado ? "bg-surface-container-low text-on-surface" : "bg-surface-container-high text-secondary"}`}
-                  >
-                    
-                    {product.estado ? "ACTIVO" : "INACTIVO"}
-                  </span>
-                </td>
-                {/* Acciones */}
-                <td className="whitespace-nowrap px-6 py-4 text-right">
-                  
-                  <div className="inline-flex items-center gap-2">
-                    
-                    <button
-                      type="button"
-                      onClick={() => onEdit(product)}
-                      title="Editar"
-                      className="rounded-lg p-2 text-secondary transition-colors hover:bg-surface-container hover:text-primary"
-                    >
-                      
-                      <Edit3 size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onMovement(product, "ENTRADA")}
-                      title="Kardex / Movimientos"
-                      className="inline-flex items-center gap-1 rounded-lg bg-surface-container px-2 py-1 font-mono text-[11px] font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
-                    >
-                      
-                      <ArrowLeftRight size={16} /> Movimientos
-                    </button>
+
+          <tbody className="divide-y divide-line-faint">
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-5 py-14 text-center">
+                  <div className="mx-auto max-w-sm">
+                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-soft text-outline">
+                      <PackageOpen size={18} />
+                    </div>
+
+                    <p className="text-sm font-medium">
+                      No se encontraron productos
+                    </p>
+
+                    <p className="mt-1 text-xs text-outline">
+                      No hay productos que coincidan con los filtros
+                      seleccionados.
+                    </p>
                   </div>
                 </td>
               </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                
-                <td
-                  colSpan={8}
-                  className="px-6 py-12 text-center text-sm text-secondary"
-                >
-                  
-                  No se encontraron productos.
-                </td>
-              </tr>
+            ) : (
+              products.map((product) => {
+                const categoryName =
+                  categoryMap.get(product.categoriaId) ?? "Sin categoría";
+
+                const isOutOfStock = product.stockActual === 0;
+
+                return (
+                  <tr
+                    key={product.id}
+                    className="transition hover:bg-surface-hover"
+                  >
+                    <td className="px-5 py-4 font-mono text-xs font-medium text-outline">
+                      {product.codigo}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div>
+                        <p className="text-sm font-semibold text-on-surface">
+                          {product.nombre}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-outline">
+                          ID #{product.id}
+                        </p>
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="inline-flex rounded-full bg-surface-container-low px-2.5 py-1 text-xs font-medium text-primary-container">
+                        {categoryName}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4 text-right">
+                      <span className="text-sm text-outline">
+                        {currencyFormatter.format(
+                          product.precioCompra
+                        )}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4 text-right">
+                      <span className="text-sm font-semibold text-on-surface">
+                        {currencyFormatter.format(
+                          product.precioVenta
+                        )}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4 text-center">
+                      <span
+                        className={`inline-flex min-w-12 justify-center rounded-full px-2.5 py-1 font-mono text-xs font-semibold ${
+                          isOutOfStock
+                            ? "bg-error-soft text-error"
+                            : "bg-surface-container-low text-primary-container"
+                        }`}
+                      >
+                        {product.stockActual}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4 text-center">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                          product.estado
+                            ? "bg-success-container text-success"
+                            : "bg-neutral-soft text-outline"
+                        }`}
+                      >
+                        {product.estado ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(product)}
+                          title="Editar producto"
+                          aria-label={`Editar ${product.nombre}`}
+                          className="rounded-lg p-2 text-outline transition hover:bg-surface-container-low hover:text-primary-container"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onMovement(product)}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-low px-3 py-1.5 text-xs font-semibold text-primary-container transition hover:bg-primary-container hover:text-white"
+                        >
+                          <ArrowLeftRight size={14} />
+                          Movimientos
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
-      {/* Paginación */}
-      <div className="flex flex-col items-center justify-between gap-4 bg-surface-container-low px-6 py-4 sm:flex-row">
-        
-        <span className="font-mono text-[11px] text-secondary">
-          
-          Página <strong className="text-on-surface">1</strong> de
-          <strong className="text-on-surface">29</strong> • 10 repuestos por
-          página
-        </span>
-        <div className="flex items-center gap-1">
-          
-          <button
-            type="button"
-            disabled
-            className="rounded-lg bg-white px-4 py-2 font-mono text-[11px] font-semibold text-secondary opacity-50 shadow-sm"
-          >
-            
-            Anterior
-          </button>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-mono text-[11px] font-bold text-white shadow-sm"
-          >
-            
-            1
-          </button>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white font-mono text-[11px] font-semibold text-on-surface shadow-sm hover:bg-surface-container"
-          >
-            
-            2
-          </button>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white font-mono text-[11px] font-semibold text-on-surface shadow-sm hover:bg-surface-container"
-          >
-            
-            3
-          </button>
-          <span className="px-1 text-secondary">...</span>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white font-mono text-[11px] font-semibold text-on-surface shadow-sm hover:bg-surface-container"
-          >
-            
-            29
-          </button>
-          <button
-            type="button"
-            className="rounded-lg bg-white px-4 py-2 font-mono text-[11px] font-semibold text-on-surface shadow-sm hover:bg-surface-container"
-          >
-            
-            Siguiente
-          </button>
-        </div>
-      </div>
-    </div>
+
+      <ProductPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
+      />
+    </section>
   );
 }

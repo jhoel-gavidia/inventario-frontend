@@ -1,170 +1,295 @@
 "use client";
 
 import {
-  ArrowDownCircle,
-  ArrowUpCircle,
-  ArrowLeftRight,
+  AlertCircle,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Minus,
+  Plus,
   X,
 } from "lucide-react";
 import { useState } from "react";
 
-import type { Product } from "../types/product";
+import { getApiErrorMessage } from "@/lib/api/errors";
+import { useCreateMovement } from "@/features/movements/hooks/use-create-movement";
 import type { MovementType } from "@/features/movements/types/movement";
+import type { Product } from "@/features/products/types/product";
 
 interface MovementModalProps {
-  open: boolean;
-  product: Product | null;
+  product: Product;
   onClose: () => void;
-  onConfirm: (product: Product, type: MovementType, quantity: number) => void;
 }
 
 export function MovementModal({
-  open,
   product,
   onClose,
-  onConfirm,
 }: MovementModalProps) {
+  const { createMovement, isPending } = useCreateMovement();
+  const isSubmitting = isPending;
+
   const [type, setType] = useState<MovementType>("ENTRADA");
-
   const [quantity, setQuantity] = useState(1);
-
-  if (!open || !product) {
-    return null;
-  }
+  const [error, setError] = useState<string | null>(null);
 
   const currentProduct = product;
 
-  function handleConfirm() {
-    if (quantity < 1) {
-      return;
-    }
+  const isSalida = type === "SALIDA";
 
-    onConfirm(currentProduct, type, quantity);
-    onClose();
+  const projectedStock = isSalida
+    ? currentProduct.stockActual - quantity
+    : currentProduct.stockActual + quantity;
+
+  const insufficientStock =
+    isSalida && quantity > currentProduct.stockActual;
+
+  const invalidQuantity = quantity < 1;
+
+  const canSubmit =
+    !isSubmitting && !invalidQuantity && !insufficientStock;
+
+  function clearError() {
+    setError(null);
+  }
+
+  async function handleConfirm() {
+    if (!canSubmit) return;
+
+    try {
+      setError(null);
+
+      await createMovement({
+        tipo: type,
+        detalles: [
+          {
+            productoId: currentProduct.id,
+            cantidad: quantity,
+          },
+        ],
+      });
+
+      onClose();
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(
+          requestError,
+          "No se pudo registrar el movimiento. Inténtalo nuevamente.",
+        ),
+      );
+    }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-2xl">
-        <div className="flex items-center justify-between bg-surface-container-low px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-              <ArrowLeftRight size={18} />
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
 
-            <div>
-              <h3 className="font-semibold text-on-surface">
-                Registrar Movimiento de Kardex
-              </h3>
+      <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-line bg-background">
+        <header className="flex items-start justify-between border-b border-line-soft px-6 py-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary-container">
+              Movimiento
+            </p>
 
-              <span className="font-mono text-[11px] text-secondary">
-                {product.codigo}
-              </span>
-            </div>
+            <h2 className="mt-1 text-base font-semibold text-on-surface">
+              Registrar movimiento
+            </h2>
+
+            <p className="mt-1 text-xs text-outline">
+              Actualiza el stock de forma controlada.
+            </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="text-secondary hover:text-on-surface"
+            disabled={isSubmitting}
+            aria-label="Cerrar"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-outline transition hover:bg-surface-container-low hover:text-primary-container disabled:opacity-50"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
-        </div>
+        </header>
 
-        <div className="space-y-5 p-6">
-          <div>
-            <label className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-wider text-secondary">
-              Tipo de Operación
+        <div className="space-y-5 px-6 py-6">
+          <section className="rounded-lg border border-line-soft bg-surface-container-low p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-on-surface">
+                  {currentProduct.nombre}
+                </p>
+
+                <p className="mt-1 font-mono text-xs text-outline">
+                  {currentProduct.codigo}
+                </p>
+              </div>
+
+              <div className="shrink-0 text-right">
+                <p className="text-xs text-outline">Stock actual</p>
+
+                <p className="mt-1 text-lg font-semibold text-on-surface">
+                  {currentProduct.stockActual}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <label className="mb-2 block text-xs font-medium text-on-surface">
+              Tipo de movimiento
             </label>
 
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setType("ENTRADA")}
-                className={`flex items-center justify-center gap-1 rounded-xl px-4 py-3 text-sm font-semibold ${
+                onClick={() => {
+                  setType("ENTRADA");
+                  clearError();
+                }}
+                disabled={isSubmitting}
+                className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition ${
                   type === "ENTRADA"
-                    ? "bg-primary text-white"
-                    : "bg-surface-container text-on-surface hover:bg-surface-container-high"
+                    ? "border-primary-container bg-primary-container text-white"
+                    : "border-line-strong bg-white text-ink-muted hover:bg-surface-container-low"
                 }`}
               >
-                <ArrowUpCircle size={18} />
-                Entrada (+ Stock)
+                <ArrowDownToLine size={16} />
+                Entrada
               </button>
 
               <button
                 type="button"
-                onClick={() => setType("SALIDA")}
-                className={`flex items-center justify-center gap-1 rounded-xl px-4 py-3 text-sm font-semibold ${
+                onClick={() => {
+                  setType("SALIDA");
+                  clearError();
+                }}
+                disabled={isSubmitting}
+                className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition ${
                   type === "SALIDA"
-                    ? "bg-primary text-white"
-                    : "bg-surface-container text-on-surface hover:bg-surface-container-high"
+                    ? "border-primary-container bg-primary-container text-white"
+                    : "border-line-strong bg-white text-ink-muted hover:bg-surface-container-low"
                 }`}
               >
-                <ArrowDownCircle size={18} />
-                Salida (Taller)
+                <ArrowUpFromLine size={16} />
+                Salida
               </button>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-wider text-secondary">
+          <section>
+            <label className="mb-2 block text-xs font-medium text-on-surface">
               Cantidad
             </label>
 
-            <input
-              min={1}
-              type="number"
-              value={quantity}
-              onChange={(event) => setQuantity(Number(event.target.value))}
-              className="w-full rounded-xl bg-surface-container-low px-4 py-3 font-mono text-xs outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
+            <div className="flex items-center rounded-lg border border-line-strong bg-white">
+              <button
+                type="button"
+                onClick={() => {
+                  setQuantity((value) => Math.max(1, value - 1));
+                  clearError();
+                }}
+                disabled={isSubmitting || quantity <= 1}
+                aria-label="Disminuir cantidad"
+                className="flex h-11 w-11 items-center justify-center text-outline transition hover:bg-surface-container-low disabled:opacity-40"
+              >
+                <Minus size={16} />
+              </button>
 
-          <div>
-            <label className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-wider text-secondary">
-              Motivo
-            </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={quantity}
+                onChange={(event) => {
+                  setQuantity(Number(event.target.value));
+                  clearError();
+                }}
+                disabled={isSubmitting}
+                aria-label="Cantidad"
+                className="h-11 min-w-0 flex-1 border-x border-line-soft bg-transparent text-center text-sm font-semibold text-on-surface outline-none"
+              />
 
-            <select className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40">
-              <option>Compra de Repuesto</option>
-              <option>Reparación en Bahía 1</option>
-              <option>Reparación en Bahía 2</option>
-              <option>Ajuste por Merma/Rotura</option>
-              <option>Venta Directa de Mostrador</option>
-            </select>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuantity((value) => value + 1);
+                  clearError();
+                }}
+                disabled={isSubmitting}
+                aria-label="Aumentar cantidad"
+                className="flex h-11 w-11 items-center justify-center text-outline transition hover:bg-surface-container-low"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
 
-          <div>
-            <label className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-wider text-secondary">
-              Nota u Observación
-            </label>
+            {insufficientStock && (
+              <p className="mt-2 text-xs font-medium text-error">
+                No puedes retirar {quantity} unidades. El stock
+                disponible es {currentProduct.stockActual}.
+              </p>
+            )}
+          </section>
 
-            <input
-              type="text"
-              placeholder="ej. Asignado a mototaxi..."
-              className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
+          <section
+            className={`rounded-lg border p-4 ${
+              insufficientStock
+                ? "border-line-error bg-error-container"
+                : "border-line-soft bg-background"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-outline">
+                Stock después del movimiento
+              </span>
+
+              <span
+                className={`text-lg font-semibold ${
+                  insufficientStock
+                    ? "text-error"
+                    : "text-on-surface"
+                }`}
+              >
+                {projectedStock}
+              </span>
+            </div>
+
+            <p className="mt-1 text-xs text-outline">
+              {isSalida
+                ? `${currentProduct.stockActual} - ${quantity}`
+                : `${currentProduct.stockActual} + ${quantity}`}
+            </p>
+          </section>
+
+          {error && (
+            <div className="flex items-start gap-2.5 rounded-lg border border-line-error bg-error-container px-3.5 py-3 text-xs text-error">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+
+              <p>{error}</p>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 bg-surface-container-low px-6 py-5">
+        <footer className="flex items-center justify-end gap-3 border-t border-line-soft px-6 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-surface-container px-6 py-3 text-sm font-semibold hover:bg-surface-container-high"
+            disabled={isSubmitting}
+            className="h-10 rounded-lg border border-line-strong bg-white px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:opacity-50"
           >
             Cancelar
           </button>
 
           <button
             type="button"
-            onClick={handleConfirm}
-            className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-primary-container"
+            onClick={() => void handleConfirm()}
+            disabled={!canSubmit}
+            className="h-10 rounded-lg bg-primary-container px-5 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Confirmar Movimiento
+            {isSubmitting ? "Registrando..." : "Registrar movimiento"}
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );

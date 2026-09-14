@@ -1,66 +1,88 @@
 "use client";
 
-import { useAuth } from "@/features/auth/hooks/use-auth";
-import { DashboardStats } from "@/features/dashboard/components/DashboardStats";
-import { RecentMovements } from "@/features/dashboard/components/RecentMovements";
-import { TodayFlow } from "@/features/dashboard/components/TodayFlow";
+import { RefreshCw } from "lucide-react";
+
+import { useDashboard } from "@/features/dashboard/hooks/use-dashboard";
+
+import { InventoryStatus } from "@/features/dashboard/components/InventoryStatus";
+import { CategoryDistribution } from "@/features/dashboard/components/CategoryDistribution";
+import { DashboardKpis } from "@/features/dashboard/components/DashboardKpis";
+import { AttentionPanel } from "@/features/dashboard/components/AttentionPanel";
+import { RecentActivity } from "@/features/dashboard/components/RecentActivity";
+import { QuickActions } from "@/features/dashboard/components/QuickActions";
 
 export default function DashboardPage() {
-  const { isChecking } = useAuth();
-
-  if (isChecking) {
-    return null;
-  }
+  const {
+    stats,
+    isLoading,
+    error,
+    refreshDashboard,
+  } = useDashboard();
 
   return (
-    <main className="relative w-full bg-surface px-6 py-6">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5">
-        {/* Encabezado */}
-        <div className="flex flex-col justify-between gap-3 py-2 sm:flex-row sm:items-center">
+    <main className="min-h-full bg-background px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px]">
+
+        <header className="mb-6 flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-on-surface">
-              Panel de Control
+            <h1 className="text-2xl font-semibold tracking-tight text-on-surface">
+              Dashboard
             </h1>
 
-            <p className="mt-0.5 text-xs text-secondary">
-              Almacén y Repuestos • Jhoelito
+            <p className="mt-1 text-sm text-outline">
+              Resumen general del inventario.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-all hover:bg-blue-700"
-            >
-              + Entrada
-            </button>
+          <button
+            type="button"
+            onClick={() => void refreshDashboard()}
+            disabled={isLoading}
+            className="flex h-10 items-center gap-2 rounded-lg border border-line-strong bg-white px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:opacity-50"
+          >
+            <RefreshCw
+              size={16}
+              className={
+                isLoading ? "animate-spin" : ""
+              }
+            />
+            Actualizar
+          </button>
+        </header>
 
-            <button
-              type="button"
-              className="rounded-lg border border-slate-200 bg-surface-container-lowest px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50"
-            >
-              − Salida
-            </button>
+        {error ? (
+          <div className="mb-6 rounded-xl border border-line-error bg-error-container px-4 py-3 text-sm text-error">
+            {error}
+          </div>
+        ) : null}
 
-            <button
-              type="button"
-              className="rounded-lg border border-slate-200 bg-surface-container-lowest px-3 py-2 text-xs font-medium text-slate-700 transition-all hover:bg-slate-50"
-            >
-              Ajuste
-            </button>
+        <DashboardKpis
+          stats={stats}
+          isLoading={isLoading}
+        />
+
+        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <div className="space-y-6 xl:col-span-7">
+            <InventoryStatus stats={stats} />
+
+            <CategoryDistribution
+              categories={stats.categoryStats}
+            />
+          </div>
+
+          <div className="space-y-6 xl:col-span-5">
+            <AttentionPanel
+              products={stats.attentionProducts}
+            />
+
+            <RecentActivity
+              movements={stats.recentMovements}
+            />
           </div>
         </div>
 
-        <DashboardStats />
-
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-          <div className="flex flex-col gap-5 xl:col-span-8">
-            <RecentMovements />
-          </div>
-
-          <div className="flex flex-col gap-5 xl:col-span-4">
-            <TodayFlow />
-          </div>
+        <div className="mt-6">
+          <QuickActions />
         </div>
       </div>
     </main>

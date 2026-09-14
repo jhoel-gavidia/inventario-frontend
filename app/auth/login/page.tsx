@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import {
-  checkSession,
+  getCurrentUser,
   login,
 } from "@/features/auth/services/auth-service";
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
   useEffect(() => {
     async function validateExistingSession() {
       try {
-        await checkSession();
+        await getCurrentUser();
         router.replace("/dashboard");
       } catch {
         setCheckingSession(false);
@@ -173,7 +173,7 @@ export default function LoginPage() {
           {error && (
             <div
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="rounded-lg border border-line-error bg-error-container px-4 py-3 text-sm text-error"
             >
               {error}
             </div>

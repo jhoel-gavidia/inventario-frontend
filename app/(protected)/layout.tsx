@@ -1,10 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+
+const ADMIN_ROUTES = new Set(["/usuarios", "/auditorias"]);
 
 interface ProtectedLayoutProps {
   children: ReactNode;
@@ -13,7 +16,8 @@ interface ProtectedLayoutProps {
 export default function ProtectedLayout({
   children,
 }: ProtectedLayoutProps) {
-  const { isChecking } = useAuth();
+  const { isChecking, user, isAdmin } = useAuth();
+  const pathname = usePathname();
 
   if (isChecking) {
     return (
@@ -25,12 +29,22 @@ export default function ProtectedLayout({
     );
   }
 
+  if (ADMIN_ROUTES.has(pathname) && !isAdmin) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm font-medium text-secondary">
+          No tienes permisos para acceder a esta sección.
+        </p>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
+      <Sidebar isAdmin={isAdmin} />
 
       <div className="pl-64">
-        <Header />
+        <Header user={user} />
 
         <main className="pt-16">
           {children}

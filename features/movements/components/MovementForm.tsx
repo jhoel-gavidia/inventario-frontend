@@ -9,10 +9,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { FormEvent } from "react";
 
+import { getApiErrorMessage } from "@/lib/api/errors";
 import type { Product } from "@/features/products/types/product";
 
-import { createMovement } from "../services/movement-service";
+import { useCreateMovement } from "../hooks/use-create-movement";
 import type {
   MovementRequest,
   MovementType,
@@ -20,7 +22,7 @@ import type {
 
 interface MovementFormProps {
   products: Product[];
-  onSaved: () => Promise<void>;
+  initialType?: MovementType;
 }
 
 interface MovementRow {
@@ -39,11 +41,14 @@ function createRow(): MovementRow {
 
 export function MovementForm({
   products,
-  onSaved,
+  initialType,
 }: MovementFormProps) {
-  const [tipo, setTipo] = useState<MovementType>("ENTRADA");
+  const { createMovement, isPending } = useCreateMovement();
+  const isSubmitting = isPending;
+  const [tipo, setTipo] = useState<MovementType>(
+    initialType ?? "ENTRADA",
+  );
   const [rows, setRows] = useState<MovementRow[]>([createRow()]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const activeProducts = useMemo(
@@ -145,7 +150,9 @@ export function MovementForm({
     setError(null);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     if (isInvalid) {
       return;
     }
@@ -159,40 +166,41 @@ export function MovementForm({
     };
 
     try {
-      setIsSubmitting(true);
       setError(null);
 
       await createMovement(request);
-      await onSaved();
 
       resetForm();
     } catch (requestError) {
-      const message =
-        getRequestErrorMessage(requestError);
-
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+      setError(
+        getApiErrorMessage(
+          requestError,
+          "No se pudo registrar el movimiento. Inténtalo nuevamente.",
+        ),
+      );
     }
   }
 
   return (
-    <div className="rounded-xl border border-[#e5e7ef] bg-white">
-      <div className="border-b border-[#eef0f5] px-5 py-5">
+    <form
+      onSubmit={(event) => void handleSubmit(event)}
+      className="rounded-xl border border-line bg-white"
+    >
+      <div className="border-b border-line-soft px-5 py-5">
         <h2 className="font-semibold">Nuevo Movimiento</h2>
 
-        <p className="mt-1 text-xs text-[#737686]">
+        <p className="mt-1 text-xs text-outline">
           Actualiza el stock registrando una entrada o salida.
         </p>
       </div>
 
       <div className="space-y-6 p-5">
         <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#737686]">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-outline">
             Tipo de movimiento
           </p>
 
-          <div className="grid grid-cols-2 rounded-lg border border-[#e5e7ef] bg-[#f8f9ff] p-1">
+          <div className="grid grid-cols-2 rounded-lg border border-line bg-background p-1">
             <button
               type="button"
               disabled={isSubmitting}
@@ -202,8 +210,8 @@ export function MovementForm({
               }}
               className={`flex h-10 items-center justify-center gap-2 rounded-md text-sm font-medium transition ${
                 tipo === "ENTRADA"
-                  ? "bg-white text-[#16823b] shadow-sm"
-                  : "text-[#737686] hover:text-[#434655]"
+                  ? "bg-white text-success shadow-sm"
+                  : "text-outline hover:text-ink-muted"
               }`}
             >
               <CirclePlus size={17} />
@@ -219,8 +227,8 @@ export function MovementForm({
               }}
               className={`flex h-10 items-center justify-center gap-2 rounded-md text-sm font-medium transition ${
                 tipo === "SALIDA"
-                  ? "bg-white text-[#ba1a1a] shadow-sm"
-                  : "text-[#737686] hover:text-[#434655]"
+                  ? "bg-white text-error shadow-sm"
+                  : "text-outline hover:text-ink-muted"
               }`}
             >
               <CircleMinus size={17} />
@@ -231,8 +239,8 @@ export function MovementForm({
           <div
             className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs ${
               tipo === "ENTRADA"
-                ? "bg-[#ecfdf3] text-[#16823b]"
-                : "bg-[#fff1f1] text-[#ba1a1a]"
+                ? "bg-success-container text-success"
+                : "bg-error-soft text-error"
             }`}
           >
             {tipo === "ENTRADA" ? (
@@ -253,24 +261,24 @@ export function MovementForm({
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold">Repuestos</p>
-              <p className="mt-0.5 text-xs text-[#737686]">
+              <p className="mt-0.5 text-xs text-outline">
                 Selecciona los productos y cantidades.
               </p>
             </div>
 
-            <span className="rounded-full bg-[#f1f3f8] px-2.5 py-1 text-xs font-medium text-[#434655]">
+            <span className="rounded-full bg-neutral-soft px-2.5 py-1 text-xs font-medium text-ink-muted">
               {rows.length}{" "}
               {rows.length === 1 ? "producto" : "productos"}
             </span>
           </div>
 
           {activeProducts.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-[#dfe2ea] bg-[#fafbff] px-4 py-6 text-center">
-              <p className="text-sm font-medium text-[#434655]">
+            <div className="rounded-lg border border-dashed border-line-strong bg-surface-hover px-4 py-6 text-center">
+              <p className="text-sm font-medium text-ink-muted">
                 No hay productos activos
               </p>
 
-              <p className="mt-1 text-xs text-[#737686]">
+              <p className="mt-1 text-xs text-outline">
                 Debes tener al menos un producto activo para registrar
                 movimientos.
               </p>
@@ -288,13 +296,13 @@ export function MovementForm({
                 return (
                   <div
                     key={row.id}
-                    className="rounded-lg border border-[#e5e7ef] bg-[#fafbff] p-3"
+                    className="rounded-lg border border-line bg-surface-hover p-3"
                   >
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_88px_36px]">
                       <div className="min-w-0">
                         <label
                           htmlFor={`producto-${row.id}`}
-                          className="mb-1.5 block text-xs font-medium text-[#434655]"
+                          className="mb-1.5 block text-xs font-medium text-ink-muted"
                         >
                           Repuesto
                         </label>
@@ -312,7 +320,7 @@ export function MovementForm({
                                 : null,
                             )
                           }
-                          className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white px-3 text-sm outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 disabled:cursor-not-allowed disabled:bg-[#f3f4f7]"
+                          className="h-10 w-full rounded-lg border border-line-strong bg-white px-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 disabled:cursor-not-allowed disabled:bg-neutral-soft"
                         >
                           <option value="">
                             Seleccionar repuesto...
@@ -336,9 +344,9 @@ export function MovementForm({
                         </select>
 
                         {selectedProduct && (
-                          <p className="mt-1.5 text-xs text-[#737686]">
+                          <p className="mt-1.5 text-xs text-outline">
                             Stock actual:{" "}
-                            <span className="font-mono font-medium text-[#434655]">
+                            <span className="font-mono font-medium text-ink-muted">
                               {selectedProduct.stockActual}
                             </span>
                           </p>
@@ -348,7 +356,7 @@ export function MovementForm({
                       <div>
                         <label
                           htmlFor={`cantidad-${row.id}`}
-                          className="mb-1.5 block text-xs font-medium text-[#434655]"
+                          className="mb-1.5 block text-xs font-medium text-ink-muted"
                         >
                           Cantidad
                         </label>
@@ -369,13 +377,13 @@ export function MovementForm({
                               Number.isNaN(value) ? 0 : value,
                             );
                           }}
-                          className={`h-10 w-full rounded-lg border bg-white px-3 text-center font-mono text-sm outline-none transition focus:ring-2 focus:ring-[#2563eb]/10 disabled:cursor-not-allowed disabled:bg-[#f3f4f7] ${
+                          className={`h-10 w-full rounded-lg border bg-white px-3 text-center font-mono text-sm outline-none transition focus:ring-2 focus:ring-primary-container/10 disabled:cursor-not-allowed disabled:bg-neutral-soft ${
                             tipo === "SALIDA" &&
                             selectedProduct &&
                             row.cantidad >
                               selectedProduct.stockActual
-                              ? "border-[#ba1a1a] focus:border-[#ba1a1a]"
-                              : "border-[#dfe2ea] focus:border-[#2563eb]"
+                              ? "border-error focus:border-error"
+                              : "border-line-strong focus:border-primary-container"
                           }`}
                         />
                       </div>
@@ -388,7 +396,7 @@ export function MovementForm({
                           }
                           onClick={() => removeRow(row.id)}
                           aria-label="Eliminar repuesto"
-                          className="flex h-10 w-9 items-center justify-center rounded-lg border border-[#e5e7ef] text-[#737686] transition hover:border-[#f0caca] hover:bg-[#fff7f7] hover:text-[#ba1a1a] disabled:cursor-not-allowed disabled:opacity-30"
+                          className="flex h-10 w-9 items-center justify-center rounded-lg border border-line text-outline transition hover:border-line-error-soft hover:bg-error-container hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -399,7 +407,7 @@ export function MovementForm({
                       selectedProduct &&
                       row.cantidad >
                         selectedProduct.stockActual && (
-                        <p className="mt-2 flex items-center gap-1.5 text-xs text-[#ba1a1a]">
+                        <p className="mt-2 flex items-center gap-1.5 text-xs text-error">
                           <AlertCircle size={14} />
                           Stock insuficiente. Disponible:{" "}
                           {selectedProduct.stockActual}.
@@ -419,7 +427,7 @@ export function MovementForm({
                 rows.length >= activeProducts.length
               }
               onClick={addRow}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#cbd2df] py-2.5 text-xs font-medium text-[#434655] transition hover:border-[#2563eb] hover:bg-[#f8faff] hover:text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-muted py-2.5 text-xs font-medium text-ink-muted transition hover:border-primary-container hover:bg-surface-hover hover:text-primary-container disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Plus size={15} />
               Agregar otro repuesto
@@ -427,25 +435,25 @@ export function MovementForm({
           )}
         </div>
 
-        <div className="rounded-lg border border-[#e5e7ef] bg-[#f8f9ff] p-4">
+        <div className="rounded-lg border border-line bg-background p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#434655]">
+            <span className="text-sm text-ink-muted">
               Total de unidades
             </span>
 
-            <span className="font-mono text-lg font-semibold text-[#0b1c30]">
+            <span className="font-mono text-lg font-semibold text-on-surface">
               {totalQuantity}
             </span>
           </div>
 
-          <div className="mt-2 flex items-center justify-between text-xs text-[#737686]">
+          <div className="mt-2 flex items-center justify-between text-xs text-outline">
             <span>Tipo</span>
 
             <span
               className={`font-medium ${
                 tipo === "ENTRADA"
-                  ? "text-[#16823b]"
-                  : "text-[#ba1a1a]"
+                  ? "text-success"
+                  : "text-error"
               }`}
             >
               {tipo === "ENTRADA" ? "Entrada" : "Salida"}
@@ -454,7 +462,7 @@ export function MovementForm({
         </div>
 
         {error && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
+          <div className="flex items-start gap-2.5 rounded-lg border border-line-error bg-error-container px-3.5 py-3 text-xs text-error">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
 
             <p>{error}</p>
@@ -484,16 +492,15 @@ export function MovementForm({
             type="button"
             disabled={isSubmitting}
             onClick={resetForm}
-            className="h-10 rounded-lg border border-[#dfe2ea] px-4 text-sm font-medium text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-10 rounded-lg border border-line-strong px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
           >
             Limpiar
           </button>
 
           <button
-            type="button"
+            type="submit"
             disabled={isInvalid}
-            onClick={() => void handleSubmit()}
-            className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-5 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary-container px-5 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
@@ -509,7 +516,7 @@ export function MovementForm({
           </button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
 
@@ -519,38 +526,10 @@ function ValidationMessage({
   children: string;
 }) {
   return (
-    <p className="-mt-3 flex items-center gap-1.5 text-xs text-[#ba1a1a]">
+    <p className="-mt-3 flex items-center gap-1.5 text-xs text-error">
       <AlertCircle size={14} />
       {children}
     </p>
   );
-}
-
-function getRequestErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error
-  ) {
-    const response = (
-      error as {
-        response?: {
-          data?: {
-            message?: string;
-          };
-        };
-      }
-    ).response;
-
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "No se pudo registrar el movimiento. Inténtalo nuevamente.";
 }
 

@@ -1,357 +1,399 @@
 "use client";
-import { Download, History, Plus, WalletCards } from "lucide-react";
-import { useMemo, useState } from "react";
-import { ProductStats } from "@/features/products/components/ProductStats";
-import { ProductFilters } from "@/features/products/components/ProductFilters";
-import { ProductTable } from "@/features/products/components/ProductTable";
+
+import { PackagePlus } from "lucide-react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import { ProductDrawer } from "@/features/products/components/ProductDrawer";
-import { MovementModal } from "@/features/products/components/MovementModal";
+import { ProductFilters } from "@/features/products/components/ProductFilters";
+import { ProductStats } from "@/features/products/components/ProductStats";
+import { ProductTable } from "@/features/products/components/ProductTable";
 import { useProducts } from "@/features/products/hooks/use-products";
-import {
-  createProduct,
-  updateProduct,
-} from "@/features/products/services/product-service";
-import type {
-  Product,
-  ProductRequest,
-} from "@/features/products/types/product";
-import type { MovementType } from "@/features/movements/types/movement";
+import { useSaveProduct } from "@/features/products/hooks/use-save-product";
+import { useCategories } from "@/features/categories/hooks/use-categories";
+
+import { MovementModal } from "@/features/products/components/MovementModal";
+import type { Product, ProductRequest } from "@/features/products/types/product";
+
+const PAGE_SIZE = 10;
+
+const currencyFormatter = new Intl.NumberFormat("es-PE", {
+  style: "currency",
+  currency: "PEN",
+});
+
 export default function ProductosPage() {
-  const { products, categories, isLoading, error, refreshProducts } =
-    useProducts();
-  const [search, setSearch] = useState("");
+  return (
+    <Suspense fallback={null}>
+      <ProductosPageContent />
+    </Suspense>
+  );
+}
+
+function ProductosPageContent() {
+  const searchParams = useSearchParams();
+
+  const {
+    products,
+    isLoading: isLoadingProducts,
+    error: productsError,
+    refreshProducts,
+  } = useProducts();
+  const { saveProduct } = useSaveProduct();
+  const {
+    categories,
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+    refreshCategories,
+  } = useCategories();
+
+  const isLoading = isLoadingProducts || isLoadingCategories;
+  const error = productsError ?? categoriesError;
+
+  async function handleRetry() {
+    await Promise.all([refreshProducts(), refreshCategories()]);
+  }
+
+  const [search, setSearch] = useState(
+    searchParams.get("search") ?? "",
+  );
   const [category, setCategory] = useState("ALL");
+  const [stockStatus, setStockStatus] = useState("ALL");
   const [status, setStatus] = useState("ALL");
-  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [drawerOpen, setDrawerOpen] = useState(
+    searchParams.get("action") === "create",
+  );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   const [movementOpen, setMovementOpen] = useState(false);
   const [movementProduct, setMovementProduct] = useState<Product | null>(null);
-  /* * Filtros */ const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.toLowerCase().trim();
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
     return products.filter((product) => {
       const matchesSearch =
-        !normalizedSearch ||
-        product.codigo.toLowerCase().includes(normalizedSearch) ||
-        product.nombre.toLowerCase().includes(normalizedSearch);
+        normalizedSearch === "" ||
+        product.nombre.toLowerCase().includes(normalizedSearch) ||
+        product.codigo.toLowerCase().includes(normalizedSearch);
+
       const matchesCategory =
         category === "ALL" || product.categoriaId === Number(category);
+
+      const matchesStock =
+        stockStatus === "ALL" ||
+        (stockStatus === "IN_STOCK" && product.stockActual > 0) ||
+        (stockStatus === "OUT_OF_STOCK" && product.stockActual === 0);
+
       const matchesStatus =
         status === "ALL" ||
-        (status === "IN_STOCK" && product.stockActual > 0) ||
-        (status === "OUT_OF_STOCK" && product.stockActual === 0) ||
-        (status === "ACTIVO" && product.estado) ||
-        (status === "INACTIVO" && !product.estado);
-      return matchesSearch && matchesCategory && matchesStatus;
+        (status === "ACTIVE" && product.estado) ||
+        (status === "INACTIVE" && !product.estado);
+
+      return matchesSearch && matchesCategory && matchesStock && matchesStatus;
     });
-  }, [products, search, category, status]);
-  /* * Estadísticas */ const totalProducts = products.length;
-  const outOfStock = products.filter(
-    (product) => product.stockActual === 0,
-  ).length;
-  const inventoryValue = products.reduce(
-    (total, product) => total + product.precioCompra * product.stockActual,
-    0,
+  }, [products, search, category, stockStatus, status]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / PAGE_SIZE),
   );
-  /* * Distribución por categorías */ const categoryDistribution =
-    useMemo(() => {
-      const totalStock = products.reduce(
-        (total, product) => total + product.stockActual,
+
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (safeCurrentPage - 1) * PAGE_SIZE;
+
+    return filteredProducts.slice(start, start + PAGE_SIZE);
+  }, [filteredProducts, safeCurrentPage]);
+
+  const activeProducts = useMemo(
+    () => products.filter((product) => product.estado),
+    [products],
+  );
+
+  const totalInventoryValue = useMemo(
+    () =>
+      activeProducts.reduce(
+        (total, product) => total + product.precioCompra * product.stockActual,
         0,
+      ),
+    [activeProducts],
+  );
+
+  const projectedSalesValue = useMemo(
+    () =>
+      activeProducts.reduce(
+        (total, product) => total + product.precioVenta * product.stockActual,
+        0,
+      ),
+    [activeProducts],
+  );
+
+  const outOfStock = useMemo(
+    () => products.filter((product) => product.stockActual === 0).length,
+    [products],
+  );
+
+  const categoryDistribution = useMemo(() => {
+    const stockByCategory = new Map<number, number>();
+    let totalStock = 0;
+
+    for (const product of products) {
+      totalStock += product.stockActual;
+      stockByCategory.set(
+        product.categoriaId,
+        (stockByCategory.get(product.categoriaId) ?? 0) +
+          product.stockActual,
       );
-      return categories.map((category) => {
-        const unidades = products
-          .filter((product) => product.categoriaId === category.id)
-          .reduce((total, product) => total + product.stockActual, 0);
-        const porcentaje =
-          totalStock > 0 ? Math.round((unidades / totalStock) * 100) : 0;
-        return {
-          id: category.id,
-          nombre: category.nombre,
-          unidades,
-          porcentaje,
-        };
-      });
-    }, [products, categories]);
-  /* * Crear producto */ function handleCreate() {
+    }
+
+    return categories.map((category) => {
+      const stock = stockByCategory.get(category.id) ?? 0;
+
+      return {
+        id: category.id,
+        nombre: category.nombre,
+        stock,
+        percentage:
+          totalStock > 0
+            ? Math.round((stock / totalStock) * 100)
+            : 0,
+      };
+    });
+  }, [products, categories]);
+
+  function handleCreate() {
     setSelectedProduct(null);
     setDrawerOpen(true);
   }
-  /* * Editar producto */ function handleEdit(product: Product) {
+
+  function handleEdit(product: Product) {
     setSelectedProduct(product);
     setDrawerOpen(true);
   }
-  /* * Cerrar drawer */ function handleCloseDrawer() {
-    setDrawerOpen(false);
-    setSelectedProduct(null);
-  }
-  /* * Guardar producto */ async function handleSaveProduct(
-    data: ProductRequest,
-  ) {
-    if (selectedProduct) {
-      await updateProduct(selectedProduct.id, data);
-    } else {
-      await createProduct(data);
-    }
-    await refreshProducts();
-    handleCloseDrawer();
-  }
-  /* * Abrir movimientos */ function handleMovement(product: Product) {
+
+  function handleMovement(product: Product) {
     setMovementProduct(product);
     setMovementOpen(true);
   }
-  /* * Registrar movimiento * * La lógica real de stock NO se ejecuta * aquí. El backend es responsable de: * * - incrementar stock en ENTRADA * - decrementar stock en SALIDA * - validar stock suficiente * - registrar auditoría */ async function handleMovementConfirm(
-    product: Product,
-    type: MovementType,
-    quantity: number,
-  ) {
-    console.log("Movimiento pendiente de conectar:", {
-      product,
-      type,
-      quantity,
-    }); /* * Cuando conectemos el endpoint de movimientos: * * await createMovement({ * tipo: type, * detalles: [ * { * productoId: product.id, * cantidad: quantity, * }, * ], * }); * * await refreshProducts(); * setMovementOpen(false); */
+
+  async function handleSaveProduct(data: ProductRequest) {
+    await saveProduct({ product: selectedProduct, data });
+    setDrawerOpen(false);
   }
+
+  function handleClearFilters() {
+    setSearch("");
+    setCategory("ALL");
+    setStockStatus("ALL");
+    setStatus("ALL");
+  }
+
   return (
-    <div className="w-full px-6 py-8 lg:px-8">
-      
-      <div className="flex flex-col gap-6">
-        
-        {/* ========================= LOADING ========================== */}
-        {isLoading && (
-          <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-secondary shadow-sm">
-            
-            Cargando productos...
+    <main className="min-h-full bg-background px-4 py-6 text-on-surface sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px]">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Productos
+            </h1>
+
+            <p className="mt-1 text-sm text-outline">
+              Gestiona productos, precios y existencias del inventario.
+            </p>
           </div>
-        )}
-        {/* ========================= ERROR ========================== */}
-        {error && !isLoading && (
-          <div className="rounded-xl bg-red-50 p-6 text-sm text-red-600">
-            
-            No se pudieron cargar los productos.
-          </div>
-        )}
-        {!isLoading && !error && (
-          <>
-            
-            {/* ========================= STATS ========================== */}
-            <ProductStats
-              totalProducts={totalProducts}
-              totalCategories={categories.length}
-              outOfStock={outOfStock}
-              inventoryValue={inventoryValue}
-            />
-            {/* ========================= HEADER ========================== */}
-            <section className="flex flex-col justify-between gap-6 rounded-xl bg-surface-container-lowest p-6 shadow-sm lg:flex-row lg:items-center">
-              
-              <div>
-                
-                <h1 className="text-2xl font-bold tracking-tight text-on-surface">
-                  
-                  Catálogo de Repuestos
-                </h1>
-                <p className="mt-2 text-sm text-secondary">
-                  
-                  Gestión de inventario de repuestos para mototaxis y servicios
-                  de taller.
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
-                
-                <button
-                  type="button"
-                  className="flex items-center gap-2 rounded-xl bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
-                >
-                  
-                  <Download size={18} /> Exportar Lista
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCreate}
-                  className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-primary-container"
-                >
-                  
-                  <Plus size={20} /> Crear Producto
-                </button>
-              </div>
-            </section>
-            {/* ========================= FILTERS ========================== */}
-            <ProductFilters
-              search={search}
-              category={category}
-              status={status}
-              totalResults={filteredProducts.length}
-              categories={categories}
-              onSearchChange={setSearch}
-              onCategoryChange={setCategory}
-              onStatusChange={setStatus}
-            />
-            {/* ========================= TABLE ========================== */}
+
+          <button
+            type="button"
+            onClick={handleCreate}
+            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-primary-container px-4 text-sm font-medium text-white transition hover:bg-accent-hover"
+          >
+            <PackagePlus size={17} />
+            Nuevo producto
+          </button>
+        </div>
+
+        {/* KPIs */}
+        <ProductStats
+          totalProducts={products.length}
+          totalCategories={categories.length}
+          outOfStock={outOfStock}
+          inventoryValue={totalInventoryValue}
+        />
+
+        {/* Filtros */}
+        <div className="mt-6">
+          <ProductFilters
+            search={search}
+            category={category}
+            stockStatus={stockStatus}
+            status={status}
+            categories={categories}
+            totalResults={filteredProducts.length}
+            totalProducts={products.length}
+            onSearchChange={setSearch}
+            onCategoryChange={setCategory}
+            onStockStatusChange={setStockStatus}
+            onStatusChange={setStatus}
+            onClear={handleClearFilters}
+          />
+        </div>
+
+        {/* Tabla */}
+        <div className="mt-6">
+          {isLoading ? (
+            <div className="rounded-xl border border-line bg-white p-10 text-center text-sm text-outline">
+              Cargando productos...
+            </div>
+          ) : error ? (
+            <div className="rounded-xl border border-line bg-white p-6 text-center">
+              <p className="text-sm font-medium text-error">{error}</p>
+
+              <button
+                type="button"
+                onClick={() => void handleRetry()}
+                className="mt-2 text-xs font-medium text-primary-container hover:underline"
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : (
             <ProductTable
-              products={filteredProducts}
+              products={paginatedProducts}
               categories={categories}
+              totalItems={filteredProducts.length}
+              currentPage={safeCurrentPage}
+              totalPages={totalPages}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
               onEdit={handleEdit}
               onMovement={handleMovement}
             />
-            {/* ========================= LOWER MODULES ========================== */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              
-              {/* DISTRIBUCIÓN */}
-              <section className="rounded-xl bg-surface-container-lowest p-6 shadow-sm">
-                
-                <div className="mb-6 flex items-center justify-between">
-                  
-                  <h2 className="font-semibold text-on-surface">
-                    
-                    Distribución por Categorías
-                  </h2>
-                  <span className="font-mono text-[11px] font-semibold text-primary">
-                    
-                    {categories.length} Categorías
-                  </span>
-                </div>
-                <div className="flex flex-col gap-4">
-                  
-                  {categoryDistribution.map((item) => (
-                    <div key={item.id} className="flex flex-col gap-1">
-                      
-                      <div className="flex items-center justify-between font-mono text-[11px]">
-                        
-                        <span> {item.nombre} </span>
-                        <span className="font-bold text-primary">
-                          
-                          {item.unidades} u. ( {item.porcentaje} %)
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container-low">
-                        
-                        <div
-                          className="h-1.5 rounded-full bg-primary"
-                          style={{ width: `${item.porcentaje}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  {categories.length === 0 && (
-                    <p className="text-sm text-secondary">
-                      
-                      No hay categorías registradas.
-                    </p>
-                  )}
-                </div>
-              </section>
-              {/* ECONOMIC */}
-              <section className="rounded-xl bg-surface-container-lowest p-6 shadow-sm">
-                
-                <div className="flex items-center justify-between">
-                  
-                  <div>
-                    
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-primary">
-                      
-                      Resumen Económico
-                    </span>
-                    <h2 className="mt-1 font-semibold text-on-surface">
-                      
-                      Valor en Inventario
-                    </h2>
-                  </div>
-                  <WalletCards size={20} className="text-primary" />
-                </div>
-                <div className="mt-6 flex flex-col gap-3">
-                  
-                  <div className="flex items-center justify-between rounded-xl bg-surface-container-low p-4">
-                    
-                    <span className="text-sm text-secondary">
-                      
-                      Costo Total en Almacén:
-                    </span>
-                    <span className="font-mono text-xs font-bold">
-                      
-                      S/
-                      {inventoryValue.toLocaleString("es-PE", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-surface-container-low p-4">
-                    
-                    <span className="text-sm text-secondary">
-                      
-                      Proyección de Venta:
-                    </span>
-                    <span className="font-mono text-xs font-bold text-primary">
-                      
-                      S/
-                      {products
-                        .reduce(
-                          (total, product) =>
-                            total + product.precioVenta * product.stockActual,
-                          0,
-                        )
-                        .toLocaleString("es-PE", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                    </span>
-                  </div>
-                </div>
-              </section>
-              {/* AUDIT */}
-              <section className="rounded-xl bg-surface-container-lowest p-6 shadow-sm">
-                
-                <div className="flex items-center justify-between">
-                  
-                  <div>
-                    
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-primary">
-                      
-                      Auditoría Reciente
-                    </span>
-                    <h2 className="mt-1 font-semibold text-on-surface">
-                      
-                      Últimos Cambios
-                    </h2>
-                  </div>
-                  <History size={20} className="text-secondary" />
-                </div>
-                <div className="mt-6 rounded-xl bg-surface-container-low p-4">
-                  
-                  <div className="flex items-center gap-2 font-mono text-[11px] font-semibold text-primary">
-                    
-                    <span className="h-2 w-2 rounded-full bg-primary" />
-                    Información de auditoría
-                  </div>
-                  <p className="mt-2 text-sm font-medium text-on-surface">
-                    
-                    Las operaciones de productos se registran
-                    automáticamente.
-                  </p>
-                  <span className="mt-1 block font-mono text-[11px] text-secondary">
-                    
-                    Sistema de auditoría
-                  </span>
-                </div>
-              </section>
+          )}
+        </div>
+
+        {/* Resumen inferior */}
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <article className="rounded-xl border border-line bg-white p-5">
+            <div className="mb-5">
+              <h2 className="font-semibold">
+                Distribución por categoría
+              </h2>
+
+              <p className="mt-1 text-xs text-outline">
+                Stock actual agrupado por categoría
+              </p>
             </div>
-          </>
-        )}
+
+            <div className="space-y-4">
+              {categoryDistribution.length === 0 ? (
+                <p className="text-sm text-outline">
+                  No hay categorías registradas.
+                </p>
+              ) : (
+                categoryDistribution.map((item) => (
+                  <div key={item.id}>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <span className="text-sm text-on-surface">
+                        {item.nombre}
+                      </span>
+
+                      <span className="text-xs text-outline">
+                        {item.stock} uds. · {item.percentage}%
+                      </span>
+                    </div>
+
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-low">
+                      <div
+                        className="h-full rounded-full bg-primary-container"
+                        style={{
+                          width: `${item.percentage}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </article>
+
+          <article className="rounded-xl border border-line bg-white p-5">
+            <div className="mb-5">
+              <h2 className="font-semibold">Resumen económico</h2>
+
+              <p className="mt-1 text-xs text-outline">
+                Valor actual de las existencias
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-outline">Valor de compra</span>
+
+                <span className="text-sm font-semibold text-on-surface">
+                  {currencyFormatter.format(totalInventoryValue)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-outline">
+                  Valor potencial de venta
+                </span>
+
+                <span className="text-sm font-semibold text-on-surface">
+                  {currencyFormatter.format(projectedSalesValue)}
+                </span>
+              </div>
+
+              <div className="border-t border-line-soft pt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-on-surface">
+                    Margen potencial
+                  </span>
+
+                  <span className="text-sm font-semibold text-primary-container">
+                    {currencyFormatter.format(
+                      projectedSalesValue - totalInventoryValue,
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        {/* Auditoría */}
+        <section className="mt-6 rounded-xl border border-line bg-white p-5">
+          <div>
+            <h2 className="font-semibold">Auditoría</h2>
+
+            <p className="mt-1 text-xs text-outline">
+              Las operaciones de inventario se registran automáticamente.
+            </p>
+          </div>
+        </section>
       </div>
-      {/* ========================= DRAWER ========================== */}
-      <ProductDrawer
-        key={selectedProduct?.id ?? "new"}
-        open={drawerOpen}
-        product={selectedProduct}
-        categories={categories}
-        onClose={handleCloseDrawer}
-        onSave={handleSaveProduct}
-      />
-      {/* ========================= MOVEMENT MODAL ========================== */}
-      <MovementModal
-        open={movementOpen}
-        product={movementProduct}
-        onClose={() => setMovementOpen(false)}
-        onConfirm={handleMovementConfirm}
-      />
-    </div>
+
+      {drawerOpen && (
+        <ProductDrawer
+          product={selectedProduct}
+          categories={categories}
+          onClose={() => setDrawerOpen(false)}
+          onSave={handleSaveProduct}
+        />
+      )}
+
+      {movementOpen && movementProduct && (
+        <MovementModal
+          product={movementProduct}
+          onClose={() => setMovementOpen(false)}
+        />
+      )}
+    </main>
   );
 }

@@ -1,9 +1,4 @@
-import {
-  AlertCircle,
-  Boxes,
-  CircleDollarSign,
-  Tags,
-} from "lucide-react";
+import { Boxes, FolderTree, PackageX, Wallet } from "lucide-react";
 
 interface ProductStatsProps {
   totalProducts: number;
@@ -12,13 +7,10 @@ interface ProductStatsProps {
   inventoryValue: number;
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency: "PEN",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
+const currencyFormatter = new Intl.NumberFormat("es-PE", {
+  style: "currency",
+  currency: "PEN",
+});
 
 export function ProductStats({
   totalProducts,
@@ -28,79 +20,76 @@ export function ProductStats({
 }: ProductStatsProps) {
   const stats = [
     {
-      label: "Total Productos",
+      label: "Productos",
       value: totalProducts,
-      description: "Repuestos registrados",
+      description: "Productos registrados",
       icon: Boxes,
-      danger: false,
     },
     {
       label: "Categorías",
       value: totalCategories,
-      description: "Familias activas",
-      icon: Tags,
-      danger: false,
+      description: "Categorías registradas",
+      icon: FolderTree,
     },
     {
-      label: "Sin Stock",
+      label: "Sin stock",
       value: outOfStock,
-      description: "Repuestos agotados",
-      icon: AlertCircle,
-      danger: true,
+      description: "Requieren reposición",
+      icon: PackageX,
+      danger: outOfStock > 0,
     },
     {
-      label: "Valor Inventario",
-      value: formatCurrency(inventoryValue),
-      description: "Valorización total",
-      icon: CircleDollarSign,
-      danger: false,
+      label: "Valor del inventario",
+      value: currencyFormatter.format(inventoryValue),
+      description: "Valor a precio de compra",
+      icon: Wallet,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => {
         const Icon = stat.icon;
 
         return (
-          <div
+          <article
             key={stat.label}
-            className="flex items-center justify-between rounded-xl bg-surface-container-lowest p-6 shadow-sm"
+            className="rounded-xl border border-line bg-white p-5"
           >
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-secondary">
-                {stat.label}
-              </span>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-ink-muted">
+                  {stat.label}
+                </p>
 
-              <span
-                className={`mt-1 text-2xl font-bold tracking-tight ${
-                  stat.danger ? "text-red-600" : "text-on-surface"
+                <p
+                  className={`mt-2 font-mono text-2xl font-semibold tracking-tight ${
+                    stat.danger
+                      ? "text-error"
+                      : "text-on-surface"
+                  }`}
+                >
+                  {stat.value}
+                </p>
+
+                <p className="mt-1 text-xs text-outline">
+                  {stat.description}
+                </p>
+              </div>
+
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                  stat.danger
+                    ? "bg-error-soft text-error"
+                    : "bg-surface-container-low text-primary-container"
                 }`}
               >
-                {stat.value}
-              </span>
-
-              <span
-                className={`mt-1 font-mono text-[11px] ${
-                  stat.danger ? "text-red-600" : "text-secondary"
-                }`}
-              >
-                {stat.description}
-              </span>
+                <Icon size={19} />
+              </div>
             </div>
-
-            <div
-              className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                stat.danger
-                  ? "bg-red-50 text-red-600"
-                  : "bg-surface-container-low text-primary"
-              }`}
-            >
-              <Icon size={26} />
-            </div>
-          </div>
+          </article>
         );
       })}
-    </div>
+    </section>
   );
 }

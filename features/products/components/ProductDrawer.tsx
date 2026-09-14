@@ -1,19 +1,54 @@
 "use client";
 
-import { X, PackagePlus, Wallet } from "lucide-react";
+import { AlertCircle, PackagePlus, Pencil, X } from "lucide-react";
 import { useState } from "react";
-import type { Product, ProductRequest, Category } from "../types/product";
+
+import { getApiErrorMessage, isServerValidationError } from "@/lib/api/errors";
+import type {
+  Product,
+  ProductRequest,
+} from "../types/product";
+
+import type { Category } from "../../categories/types/category";
 
 interface ProductDrawerProps {
-  open: boolean;
   product: Product | null;
   categories: Category[];
   onClose: () => void;
   onSave: (data: ProductRequest) => Promise<void>;
 }
 
+const inputClassName =
+  "h-11 w-full rounded-lg border bg-white px-3 text-sm text-on-surface outline-none transition placeholder:text-ink-faint focus:ring-2";
+
+const inputBorderClassName =
+  "border-line-strong focus:border-primary-container focus:ring-primary-container/10";
+
+function getInitialForm(product: Product | null): ProductRequest {
+  if (!product) {
+    return {
+      codigo: "",
+      nombre: "",
+      categoriaId: 0,
+      precioCompra: 0,
+      precioVenta: 0,
+      stockInicial: 0,
+      estado: true,
+    };
+  }
+
+  return {
+    codigo: product.codigo,
+    nombre: product.nombre,
+    categoriaId: product.categoriaId,
+    precioCompra: product.precioCompra,
+    precioVenta: product.precioVenta,
+    stockInicial: 0,
+    estado: product.estado,
+  };
+}
+
 export function ProductDrawer({
-  open,
   product,
   categories,
   onClose,
@@ -21,241 +56,404 @@ export function ProductDrawer({
 }: ProductDrawerProps) {
   const isEditing = product !== null;
 
-  const [form, setForm] = useState<ProductRequest>({
-    codigo: product?.codigo ?? "",
-    nombre: product?.nombre ?? "",
-    categoriaId: product?.categoriaId ?? 0,
-    precioCompra: product?.precioCompra ?? 0,
-    precioVenta: product?.precioVenta ?? 0,
-    stockInicial: 0,
-    estado: product?.estado ?? true,
-  });
+  const [form, setForm] = useState<ProductRequest>(() =>
+    getInitialForm(product)
+  );
 
   const [isSaving, setIsSaving] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  if (!open) return null;
+  const margin = form.precioVenta - form.precioCompra;
+
+  const marginPercentage =
+    form.precioCompra > 0
+      ? (margin / form.precioCompra) * 100
+      : 0;
+
+  const hasNegativeMargin = margin < 0;
 
   function updateField<K extends keyof ProductRequest>(
     field: K,
-    value: ProductRequest[K],
+    value: ProductRequest[K]
   ) {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+
+    setFieldError(null);
+    setServerError(null);
   }
 
-  const margen = form.precioVenta - form.precioCompra;
-  const margenPct =
-    form.precioCompra > 0
-      ? ((margen / form.precioCompra) * 100).toFixed(1)
-      : "0.0";
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
+
     try {
       setIsSaving(true);
+      setFieldError(null);
+      setServerError(null);
       await onSave(form);
+    } catch (requestError) {
+      const message = getApiErrorMessage(
+        requestError,
+        "No se pudo guardar el producto. Inténtalo nuevamente.",
+      );
+
+      if (
+        isServerValidationError(requestError) &&
+        /c[óo]digo|sku/i.test(message)
+      ) {
+        setFieldError(message);
+      } else {
+        setServerError(message);
+      }
     } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <>
+    <div className="fixed inset-0 z-50">
       <div
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
-      <aside className="fixed right-0 top-0 z-50 flex h-full w-full max-w-xl flex-col overflow-hidden bg-surface-container-lowest shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between bg-surface-container-low px-6 py-5">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-line bg-background">
+        <header className="flex items-center justify-between border-b border-line-soft px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-              <PackagePlus size={20} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
+              {isEditing ? (
+                <Pencil size={18} />
+              ) : (
+                <PackagePlus size={18} />
+              )}
             </div>
+
             <div>
-              <h2 className="font-semibold text-on-surface">
-                {isEditing ? "Editar Repuesto" : "Nuevo Repuesto"}
+              <h2 className="text-base font-semibold text-on-surface">
+                {isEditing ? "Editar producto" : "Nuevo producto"}
               </h2>
-              <span className="text-sm text-on-surface-variant">
+
+              <p className="mt-0.5 text-xs text-outline">
                 {isEditing
-                  ? `Modificando: ${form.codigo}`
-                  : "Formulario de registro"}
-              </span>
+                  ? "Actualiza la información del producto"
+                  : "Registra un nuevo producto en el inventario"}
+              </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="text-secondary hover:text-on-surface"
+            aria-label="Cerrar"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-outline transition hover:bg-surface-container-low hover:text-primary-container"
           >
-            <X size={22} />
+            <X size={18} />
           </button>
-        </div>
+        </header>
 
-        {/* Form body */}
         <form
-          id="product-form"
           onSubmit={handleSubmit}
-          className="flex flex-1 flex-col gap-5 overflow-y-auto p-6"
+          className="flex min-h-0 flex-1 flex-col"
         >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                Código SKU *
-              </label>
-              <input
-                required
-                value={form.codigo}
-                onChange={(e) => updateField("codigo", e.target.value)}
-                className="rounded-xl bg-surface-container-low px-4 py-3 font-mono text-xs outline-none focus:ring-2 focus:ring-primary/40"
-                placeholder="ej. REP-MOT-045"
-              />
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="space-y-6">
+              <section>
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-on-surface">
+                    Información general
+                  </h3>
+
+                  <p className="mt-1 text-xs text-outline">
+                    Datos básicos para identificar el producto.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="product-codigo"
+                      className="mb-1.5 block text-xs font-medium text-on-surface"
+                    >
+                      Código / SKU
+                    </label>
+
+                    <input
+                      id="product-codigo"
+                      autoFocus
+                      required
+                      value={form.codigo}
+                      onChange={(event) =>
+                        updateField("codigo", event.target.value)
+                      }
+                      placeholder="Ej. MOT-001"
+                      aria-invalid={fieldError !== null}
+                      aria-describedby={
+                        fieldError
+                          ? "product-codigo-error"
+                          : undefined
+                      }
+                      className={`${inputClassName} ${
+                        fieldError
+                          ? "border-line-error-strong focus:border-error focus:ring-error/10"
+                          : "border-line-strong focus:border-primary-container focus:ring-primary-container/10"
+                      }`}
+                    />
+
+                    {fieldError && (
+                      <p
+                        id="product-codigo-error"
+                        className="mt-1.5 flex items-start gap-1 text-xs text-error"
+                      >
+                        <AlertCircle
+                          size={14}
+                          className="mt-0.5 shrink-0"
+                        />
+                        {fieldError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                      Nombre
+                    </label>
+
+                    <input
+                      required
+                      value={form.nombre}
+                      onChange={(event) =>
+                        updateField("nombre", event.target.value)
+                      }
+                      placeholder="Ej. Pastillas de freno"
+                      className={`${inputClassName} ${inputBorderClassName}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                      Categoría
+                    </label>
+
+                    <select
+                      required
+                      value={
+                        form.categoriaId === 0
+                          ? ""
+                          : form.categoriaId
+                      }
+                      onChange={(event) =>
+                        updateField(
+                          "categoriaId",
+                          event.target.value
+                            ? Number(event.target.value)
+                            : 0
+                        )
+                      }
+                      className={`${inputClassName} ${inputBorderClassName}`}
+                    >
+                      <option value="" disabled>
+                        Selecciona una categoría
+                      </option>
+
+                      {categories.map((category) => (
+                        <option
+                          key={category.id}
+                          value={category.id}
+                        >
+                          {category.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                      Estado
+                    </label>
+
+                    <select
+                      value={String(form.estado)}
+                      onChange={(event) =>
+                        updateField(
+                          "estado",
+                          event.target.value === "true"
+                        )
+                      }
+                      className={`${inputClassName} ${inputBorderClassName}`}
+                    >
+                      <option value="true">Activo</option>
+                      <option value="false">Inactivo</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              <section className="border-t border-line-soft pt-6">
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-on-surface">
+                    Información económica
+                  </h3>
+
+                  <p className="mt-1 text-xs text-outline">
+                    Define los precios de compra y venta.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                      Precio de compra
+                    </label>
+
+                    <input
+                      required
+                      min="0"
+                      step="0.01"
+                      type="number"
+                      value={form.precioCompra}
+                      onChange={(event) =>
+                        updateField(
+                          "precioCompra",
+                          Number(event.target.value)
+                        )
+                      }
+                      className={`${inputClassName} ${inputBorderClassName}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
+                      Precio de venta
+                    </label>
+
+                    <input
+                      required
+                      min="0"
+                      step="0.01"
+                      type="number"
+                      value={form.precioVenta}
+                      onChange={(event) =>
+                        updateField(
+                          "precioVenta",
+                          Number(event.target.value)
+                        )
+                      }
+                      className={`${inputClassName} ${inputBorderClassName}`}
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className={`mt-4 rounded-lg border p-3 ${
+                    hasNegativeMargin
+                      ? "border-line-error bg-error-container"
+                      : "border-line-soft bg-background"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-outline">
+                      Margen por unidad
+                    </span>
+
+                    <span
+                      className={`text-sm font-semibold ${
+                        hasNegativeMargin
+                          ? "text-error"
+                          : "text-primary-container"
+                      }`}
+                    >
+                      S/ {margin.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <p
+                    className={`mt-1 text-xs ${
+                      hasNegativeMargin
+                        ? "text-error"
+                        : "text-outline"
+                    }`}
+                  >
+                    {hasNegativeMargin
+                      ? `El precio de venta está ${Math.abs(
+                          marginPercentage
+                        ).toFixed(
+                          1
+                        )}% por debajo del precio de compra.`
+                      : `Margen aproximado de ${marginPercentage.toFixed(
+                          1
+                        )}%.`}
+                  </p>
+                </div>
+              </section>
+
+              {!isEditing && (
+                <section className="border-t border-line-soft pt-6">
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-on-surface">
+                      Stock inicial
+                    </h3>
+
+                    <p className="mt-1 text-xs text-outline">
+                      Cantidad disponible al registrar el producto.
+                    </p>
+                  </div>
+
+                  <input
+                    required
+                    min="0"
+                    step="1"
+                    type="number"
+                    value={form.stockInicial}
+                    onChange={(event) =>
+                      updateField(
+                        "stockInicial",
+                        Number(event.target.value)
+                      )
+                    }
+                    className={`${inputClassName} ${inputBorderClassName}`}
+                  />
+                </section>
+              )}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                Estado Operativo
-              </label>
-              <select
-                value={form.estado ? "ACTIVO" : "INACTIVO"}
-                onChange={(e) =>
-                  updateField("estado", e.target.value === "ACTIVO")
-                }
-                className="rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-              >
-                <option value="ACTIVO">ACTIVO (Disponible)</option>
-                <option value="INACTIVO">INACTIVO (Descontinuado)</option>
-              </select>
-            </div>
+            {serverError && (
+              <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-line-error bg-error-container px-3.5 py-3 text-xs text-error">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+
+                <p>{serverError}</p>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-              Nombre del Repuesto *
-            </label>
-            <input
-              required
-              value={form.nombre}
-              onChange={(e) => updateField("nombre", e.target.value)}
-              className="rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="ej. Kit Rodajes de Rueda Delantera"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-              Categoría *
-            </label>
-            <select
-              required
-              value={form.categoriaId}
-              onChange={(e) =>
-                updateField("categoriaId", Number(e.target.value))
-              }
-              className="rounded-xl bg-surface-container-low px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+          <footer className="flex items-center justify-end gap-3 border-t border-line-soft bg-background px-6 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSaving}
+              className="h-10 rounded-lg border border-line-strong bg-white px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:opacity-50"
             >
-              <option value={0}>Seleccionar categoría</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+              Cancelar
+            </button>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                Precio de Compra (S/) *
-              </label>
-              <input
-                required
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.precioCompra}
-                onChange={(e) =>
-                  updateField("precioCompra", Number(e.target.value))
-                }
-                className="rounded-xl bg-surface-container-low px-4 py-3 text-right font-mono text-xs outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                Precio de Venta (S/) *
-              </label>
-              <input
-                required
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.precioVenta}
-                onChange={(e) =>
-                  updateField("precioVenta", Number(e.target.value))
-                }
-                className="rounded-xl bg-surface-container-low px-4 py-3 text-right font-mono text-xs outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-          </div>
-
-          {!isEditing && (
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                Stock Inicial *
-              </label>
-              <input
-                required
-                type="number"
-                min="0"
-                value={form.stockInicial}
-                onChange={(e) =>
-                  updateField("stockInicial", Number(e.target.value))
-                }
-                className="rounded-xl bg-surface-container-low px-4 py-3 font-mono text-xs outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-          )}
-
-          <div className="mt-2 flex flex-col gap-2 rounded-xl bg-surface-container-low p-4">
-            <span className="flex items-center gap-1 text-[11px] font-semibold uppercase text-secondary">
-              <Wallet size={14} /> Margen Bruto Estimado
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-on-surface">
-                Margen unitario:
-              </span>
-              <span className="font-mono text-xs font-bold text-primary">
-                S/ {margen.toFixed(2)} (+{margenPct}%)
-              </span>
-            </div>
-          </div>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="h-10 rounded-lg bg-primary-container px-5 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSaving
+                ? "Guardando..."
+                : isEditing
+                  ? "Guardar cambios"
+                  : "Crear producto"}
+            </button>
+          </footer>
         </form>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 bg-surface-container-low px-6 py-5">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSaving}
-            className="rounded-xl bg-surface-container px-6 py-3 text-sm font-semibold hover:bg-surface-container-high"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            form="product-form"
-            disabled={isSaving}
-            className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-primary-container disabled:opacity-60"
-          >
-            {isSaving
-              ? "Guardando..."
-              : isEditing
-                ? "Actualizar"
-                : "Guardar Repuesto"}
-          </button>
-        </div>
       </aside>
-    </>
+    </div>
   );
 }

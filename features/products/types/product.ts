@@ -18,8 +18,3 @@ export interface ProductRequest {
   stockInicial: number;
   estado: boolean;
 }
-
-export interface Category {
-  id: number;
-  nombre: string;
-}

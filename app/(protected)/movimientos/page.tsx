@@ -9,7 +9,8 @@ import {
   Search,
   Scale,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { Suspense, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { MovementForm } from "@/features/movements/components/MovementForm";
 import { useMovements } from "@/features/movements/hooks/use-movements";
@@ -30,6 +31,25 @@ type MovementDetailRow = {
 };
 
 export default function MovimientosPage() {
+  return (
+    <Suspense fallback={null}>
+      <MovimientosPageContent />
+    </Suspense>
+  );
+}
+
+function MovimientosPageContent() {
+  const searchParams = useSearchParams();
+
+  const movementAction = searchParams.get("action");
+
+  const initialMovementType: MovementType | undefined =
+    movementAction === "salida"
+      ? "SALIDA"
+      : movementAction === "entrada"
+        ? "ENTRADA"
+        : undefined;
+
   const {
     movements,
     isLoading: isLoadingMovements,
@@ -172,14 +192,14 @@ export default function MovimientosPage() {
   const isLoading = isLoadingMovements || isLoadingProducts;
 
   return (
-    <main className="min-h-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] sm:px-6 lg:px-8">
+    <main className="min-h-full bg-background px-4 py-6 text-on-surface sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px]">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
               Movimientos
             </h1>
-            <p className="mt-1 text-sm text-[#737686]">
+            <p className="mt-1 text-sm text-outline">
               Registra y consulta las entradas y salidas de stock.
             </p>
           </div>
@@ -209,24 +229,24 @@ export default function MovimientosPage() {
         </section>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <section className="min-w-0 rounded-xl border border-[#e5e7ef] bg-white xl:col-span-7">
-            <div className="border-b border-[#eef0f5] px-5 py-5">
+          <section className="min-w-0 rounded-xl border border-line bg-white xl:col-span-7">
+            <div className="border-b border-line-soft px-5 py-5">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
                     <History size={18} />
                   </div>
 
                   <div>
                     <h2 className="font-semibold">Historial de movimientos</h2>
-                    <p className="text-xs text-[#737686]">
+                    <p className="text-xs text-outline">
                       Consulta las operaciones registradas.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div className="flex rounded-lg border border-[#e5e7ef] bg-[#f8f9ff] p-1">
+                  <div className="flex rounded-lg border border-line bg-background p-1">
                     <FilterButton
                       active={filter === "TODOS"}
                       onClick={() => handleFilterChange("TODOS")}
@@ -252,7 +272,7 @@ export default function MovimientosPage() {
                   <div className="relative w-full md:max-w-xs">
                     <Search
                       size={17}
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#737686]"
+                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
                     />
 
                     <input
@@ -262,7 +282,7 @@ export default function MovimientosPage() {
                         handleSearchChange(event.target.value)
                       }
                       placeholder="Buscar por código o repuesto..."
-                      className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10"
+                      className="h-10 w-full rounded-lg border border-line-strong bg-white pl-9 pr-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10"
                     />
                   </div>
                 </div>
@@ -271,12 +291,12 @@ export default function MovimientosPage() {
 
             {movementsError ? (
               <div className="px-5 py-10 text-center">
-                <p className="text-sm text-[#ba1a1a]">{movementsError}</p>
+                <p className="text-sm text-error">{movementsError}</p>
 
                 <button
                   type="button"
                   onClick={() => void refreshMovements()}
-                  className="mt-3 text-sm font-medium text-[#2563eb] hover:underline"
+                  className="mt-3 text-sm font-medium text-primary-container hover:underline"
                 >
                   Reintentar
                 </button>
@@ -286,7 +306,7 @@ export default function MovimientosPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-162.5 text-left">
                     <thead>
-                      <tr className="border-b border-[#eef0f5] text-xs uppercase tracking-wide text-[#737686]">
+                      <tr className="border-b border-line-soft text-xs uppercase tracking-wide text-outline">
                         <th className="px-5 py-3 font-medium">Código</th>
                         <th className="px-5 py-3 font-medium">Fecha</th>
                         <th className="px-5 py-3 font-medium">Tipo</th>
@@ -297,20 +317,20 @@ export default function MovimientosPage() {
                       </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-[#f0f1f5]">
+                    <tbody className="divide-y divide-line-faint">
                       {isLoading ? (
                         <LoadingRows />
                       ) : paginatedRows.length > 0 ? (
                         paginatedRows.map((row) => (
                           <tr
                             key={`${row.movement.id}-${row.productoId}`}
-                            className="transition hover:bg-[#fafbff]"
+                            className="transition hover:bg-surface-hover"
                           >
-                            <td className="px-5 py-4 font-mono text-xs font-medium text-[#434655]">
+                            <td className="px-5 py-4 font-mono text-xs font-medium text-ink-muted">
                               {getMovementCode(row.movement.id)}
                             </td>
 
-                            <td className="whitespace-nowrap px-5 py-4 text-sm text-[#434655]">
+                            <td className="whitespace-nowrap px-5 py-4 text-sm text-ink-muted">
                               {formatDate(row.movement.fecha)}
                             </td>
 
@@ -320,12 +340,12 @@ export default function MovimientosPage() {
 
                             <td className="px-5 py-4">
                               <div className="max-w-57.5">
-                                <p className="truncate text-sm font-medium text-[#0b1c30]">
+                                <p className="truncate text-sm font-medium text-on-surface">
                                   {row.productoNombre}
                                 </p>
 
                                 {row.codigo && (
-                                  <p className="mt-0.5 font-mono text-xs text-[#737686]">
+                                  <p className="mt-0.5 font-mono text-xs text-outline">
                                     {row.codigo}
                                   </p>
                                 )}
@@ -336,8 +356,8 @@ export default function MovimientosPage() {
                               <span
                                 className={`font-mono text-sm font-semibold ${
                                   row.movement.tipo === "ENTRADA"
-                                    ? "text-[#16823b]"
-                                    : "text-[#ba1a1a]"
+                                    ? "text-success"
+                                    : "text-error"
                                 }`}
                               >
                                 {row.movement.tipo === "ENTRADA" ? "+" : "-"}
@@ -350,7 +370,7 @@ export default function MovimientosPage() {
                         <tr>
                           <td colSpan={5} className="px-5 py-14 text-center">
                             <div className="mx-auto flex max-w-sm flex-col items-center">
-                              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f4f8] text-[#737686]">
+                              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-soft text-outline">
                                 <History size={18} />
                               </div>
 
@@ -358,7 +378,7 @@ export default function MovimientosPage() {
                                 No hay movimientos
                               </p>
 
-                              <p className="mt-1 text-xs text-[#737686]">
+                              <p className="mt-1 text-xs text-outline">
                                 No se encontraron movimientos con los filtros
                                 actuales.
                               </p>
@@ -370,8 +390,8 @@ export default function MovimientosPage() {
                   </table>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-[#eef0f5] px-5 py-4">
-                  <p className="text-xs text-[#737686]">
+                <div className="flex items-center justify-between border-t border-line-soft px-5 py-4">
+                  <p className="text-xs text-outline">
                     {filteredRows.length === 0
                       ? "0 registros"
                       : `${(safeCurrentPage - 1) * PAGE_SIZE + 1}-${Math.min(
@@ -391,7 +411,7 @@ export default function MovimientosPage() {
                       <ArrowLeft size={15} />
                     </PaginationButton>
 
-                    <span className="px-2 text-xs font-medium text-[#434655]">
+                    <span className="px-2 text-xs font-medium text-ink-muted">
                       {safeCurrentPage} / {totalPages}
                     </span>
 
@@ -411,7 +431,10 @@ export default function MovimientosPage() {
           </section>
 
           <section className="min-w-0 xl:col-span-5">
-            <MovementForm products={products} onSaved={refreshMovements} />
+            <MovementForm
+              products={products}
+              initialType={initialMovementType}
+            />
           </section>
         </div>
       </div>
@@ -431,19 +454,19 @@ function MetricCard({
   description: string;
 }) {
   return (
-    <article className="rounded-xl border border-[#e5e7ef] bg-white p-5">
+    <article className="rounded-xl border border-line bg-white p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-[#434655]">{label}</p>
+          <p className="text-sm font-medium text-ink-muted">{label}</p>
 
           <p className="mt-2 font-mono text-2xl font-semibold tracking-tight">
             {value}
           </p>
 
-          <p className="mt-1 text-xs text-[#737686]">{description}</p>
+          <p className="mt-1 text-xs text-outline">{description}</p>
         </div>
 
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
           {icon}
         </div>
       </div>
@@ -466,8 +489,8 @@ function FilterButton({
       onClick={onClick}
       className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
         active
-          ? "bg-white text-[#2563eb] shadow-sm"
-          : "text-[#737686] hover:text-[#434655]"
+          ? "bg-white text-primary-container shadow-sm"
+          : "text-outline hover:text-ink-muted"
       }`}
     >
       {children}
@@ -481,7 +504,7 @@ function MovementBadge({ tipo }: { tipo: MovementType }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-        isEntry ? "bg-[#ecfdf3] text-[#16823b]" : "bg-[#fff1f1] text-[#ba1a1a]"
+        isEntry ? "bg-success-container text-success" : "bg-error-soft text-error"
       }`}
     >
       {isEntry ? <ArrowDownToLine size={13} /> : <ArrowUpFromLine size={13} />}
@@ -508,7 +531,7 @@ function PaginationButton({
       disabled={disabled}
       onClick={onClick}
       aria-label={ariaLabel}
-      className="flex h-8 w-8 items-center justify-center rounded-md border border-[#e5e7ef] text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>
@@ -521,7 +544,7 @@ function LoadingRows() {
       {Array.from({ length: PAGE_SIZE }).map((_, index) => (
         <tr key={index}>
           <td className="px-5 py-4" colSpan={5}>
-            <div className="h-5 animate-pulse rounded bg-[#f1f3f7]" />
+            <div className="h-5 animate-pulse rounded bg-neutral-soft" />
           </td>
         </tr>
       ))}
