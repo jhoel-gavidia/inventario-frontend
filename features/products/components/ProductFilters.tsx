@@ -2,7 +2,7 @@
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
-import type { Category } from "../types/product";
+import type { Category } from "@/features/categories/types/category";
 
 interface ProductFiltersProps {
   search: string;

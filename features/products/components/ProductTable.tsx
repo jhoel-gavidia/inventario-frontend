@@ -3,7 +3,7 @@
 import { ArrowLeftRight, Edit3, PackageOpen } from "lucide-react";
 import { useMemo } from "react";
 
-import type { Category } from "../types/product";
+import type { Category } from "@/features/categories/types/category";
 import type { Product } from "../types/product";
 
 import { ProductPagination } from "./ProductPagination";
