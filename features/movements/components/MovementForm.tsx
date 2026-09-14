@@ -9,10 +9,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { FormEvent } from "react";
 
+import { getApiErrorMessage } from "@/lib/api/errors";
 import type { Product } from "@/features/products/types/product";
 
-import { createMovement } from "../services/movement-service";
+import { useCreateMovement } from "../hooks/use-create-movement";
 import type {
   MovementRequest,
   MovementType,
@@ -20,7 +22,6 @@ import type {
 
 interface MovementFormProps {
   products: Product[];
-  onSaved: () => Promise<void>;
 }
 
 interface MovementRow {
@@ -39,11 +40,11 @@ function createRow(): MovementRow {
 
 export function MovementForm({
   products,
-  onSaved,
 }: MovementFormProps) {
+  const { createMovement, isPending } = useCreateMovement();
+  const isSubmitting = isPending;
   const [tipo, setTipo] = useState<MovementType>("ENTRADA");
   const [rows, setRows] = useState<MovementRow[]>([createRow()]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const activeProducts = useMemo(
@@ -145,7 +146,9 @@ export function MovementForm({
     setError(null);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     if (isInvalid) {
       return;
     }
@@ -159,25 +162,26 @@ export function MovementForm({
     };
 
     try {
-      setIsSubmitting(true);
       setError(null);
 
       await createMovement(request);
-      await onSaved();
 
       resetForm();
     } catch (requestError) {
-      const message =
-        getRequestErrorMessage(requestError);
-
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+      setError(
+        getApiErrorMessage(
+          requestError,
+          "No se pudo registrar el movimiento. Inténtalo nuevamente.",
+        ),
+      );
     }
   }
 
   return (
-    <div className="rounded-xl border border-[#e5e7ef] bg-white">
+    <form
+      onSubmit={(event) => void handleSubmit(event)}
+      className="rounded-xl border border-[#e5e7ef] bg-white"
+    >
       <div className="border-b border-[#eef0f5] px-5 py-5">
         <h2 className="font-semibold">Nuevo Movimiento</h2>
 
@@ -490,9 +494,8 @@ export function MovementForm({
           </button>
 
           <button
-            type="button"
+            type="submit"
             disabled={isInvalid}
-            onClick={() => void handleSubmit()}
             className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-5 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
@@ -509,7 +512,7 @@ export function MovementForm({
           </button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
 
@@ -524,33 +527,5 @@ function ValidationMessage({
       {children}
     </p>
   );
-}
-
-function getRequestErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error
-  ) {
-    const response = (
-      error as {
-        response?: {
-          data?: {
-            message?: string;
-          };
-        };
-      }
-    ).response;
-
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "No se pudo registrar el movimiento. Inténtalo nuevamente.";
 }
 

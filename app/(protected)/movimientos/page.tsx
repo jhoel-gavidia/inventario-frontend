@@ -411,7 +411,7 @@ export default function MovimientosPage() {
           </section>
 
           <section className="min-w-0 xl:col-span-5">
-            <MovementForm products={products} onSaved={refreshMovements} />
+            <MovementForm products={products} />
           </section>
         </div>
       </div>
