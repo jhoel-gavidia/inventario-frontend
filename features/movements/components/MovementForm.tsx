@@ -22,6 +22,7 @@ import type {
 
 interface MovementFormProps {
   products: Product[];
+  initialType?: MovementType;
 }
 
 interface MovementRow {
@@ -40,10 +41,13 @@ function createRow(): MovementRow {
 
 export function MovementForm({
   products,
+  initialType,
 }: MovementFormProps) {
   const { createMovement, isPending } = useCreateMovement();
   const isSubmitting = isPending;
-  const [tipo, setTipo] = useState<MovementType>("ENTRADA");
+  const [tipo, setTipo] = useState<MovementType>(
+    initialType ?? "ENTRADA",
+  );
   const [rows, setRows] = useState<MovementRow[]>([createRow()]);
   const [error, setError] = useState<string | null>(null);
 

@@ -9,7 +9,8 @@ import {
   Search,
   Scale,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { Suspense, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { MovementForm } from "@/features/movements/components/MovementForm";
 import { useMovements } from "@/features/movements/hooks/use-movements";
@@ -30,6 +31,25 @@ type MovementDetailRow = {
 };
 
 export default function MovimientosPage() {
+  return (
+    <Suspense fallback={null}>
+      <MovimientosPageContent />
+    </Suspense>
+  );
+}
+
+function MovimientosPageContent() {
+  const searchParams = useSearchParams();
+
+  const movementAction = searchParams.get("action");
+
+  const initialMovementType: MovementType | undefined =
+    movementAction === "salida"
+      ? "SALIDA"
+      : movementAction === "entrada"
+        ? "ENTRADA"
+        : undefined;
+
   const {
     movements,
     isLoading: isLoadingMovements,
@@ -411,7 +431,10 @@ export default function MovimientosPage() {
           </section>
 
           <section className="min-w-0 xl:col-span-5">
-            <MovementForm products={products} />
+            <MovementForm
+              products={products}
+              initialType={initialMovementType}
+            />
           </section>
         </div>
       </div>

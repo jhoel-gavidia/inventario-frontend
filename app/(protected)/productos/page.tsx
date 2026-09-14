@@ -1,7 +1,8 @@
 "use client";
 
 import { PackagePlus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { ProductDrawer } from "@/features/products/components/ProductDrawer";
 import { ProductFilters } from "@/features/products/components/ProductFilters";
@@ -22,6 +23,16 @@ const currencyFormatter = new Intl.NumberFormat("es-PE", {
 });
 
 export default function ProductosPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductosPageContent />
+    </Suspense>
+  );
+}
+
+function ProductosPageContent() {
+  const searchParams = useSearchParams();
+
   const {
     products,
     isLoading: isLoadingProducts,
@@ -43,14 +54,18 @@ export default function ProductosPage() {
     await Promise.all([refreshProducts(), refreshCategories()]);
   }
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(
+    searchParams.get("search") ?? "",
+  );
   const [category, setCategory] = useState("ALL");
   const [stockStatus, setStockStatus] = useState("ALL");
   const [status, setStatus] = useState("ALL");
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(
+    searchParams.get("action") === "create",
+  );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [movementOpen, setMovementOpen] = useState(false);
