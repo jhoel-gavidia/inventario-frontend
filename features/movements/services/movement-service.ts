@@ -7,12 +7,6 @@ export async function getMovements(): Promise<Movement[]> {
   return data;
 }
 
-export async function getMovementById(id: number): Promise<Movement> {
-  const { data } = await api.get<Movement>(`/movimientos/${id}`);
-
-  return data;
-}
-
 export async function createMovement(
   request: MovementRequest,
 ): Promise<Movement> {

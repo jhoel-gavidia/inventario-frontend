@@ -3,7 +3,6 @@
 import {
   CalendarDays,
   Factory,
-  Search,
 } from "lucide-react";
 
 import type { SessionUser } from "@/features/auth/types/auth";
@@ -34,11 +33,11 @@ export function Header({ user }: HeaderProps) {
     <header className="fixed left-64 right-0 top-0 z-40 flex h-16 items-center justify-between border-b border-line/80 bg-surface-container-lowest/95 px-6 backdrop-blur-md">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 text-primary">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-surface-container-low text-primary">
           <Factory size={18} />
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+        <div className="flex items-center gap-2 text-xs text-ink-muted">
           <span className="font-semibold text-on-surface">
             Jhoelito
           </span>
@@ -53,17 +52,6 @@ export function Header({ user }: HeaderProps) {
 
       {/* Acciones */}
       <div className="flex items-center gap-3">
-        {/* Buscar */}
-        <div className="hidden min-w-70 items-center gap-2 rounded-lg border border-line/80 bg-surface-container-low px-3 py-1.5 text-on-surface-variant transition-colors focus-within:border-primary md:flex">
-          <Search size={18} className="text-ink-faint" />
-
-          <input
-            type="text"
-            placeholder="Buscar código SKU o repuesto..."
-            className="w-full border-none bg-transparent p-0 text-xs text-on-surface outline-none placeholder:text-ink-faint focus:ring-0"
-          />
-        </div>
-
         {/* Fecha */}
         <div className="hidden items-center gap-1.5 rounded-lg border border-line/80 bg-neutral-soft px-2 py-1 font-mono text-[11px] font-medium capitalize text-ink-muted xl:flex">
           <CalendarDays size={14} className="text-primary" />
@@ -82,7 +70,7 @@ export function Header({ user }: HeaderProps) {
                 {username}
               </span>
 
-              <span className="rounded bg-blue-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              <span className="rounded bg-primary px-1.5 py-0.5 font-mono text-[10px] font-bold text-white">
                 {isAdmin ? "ADMIN" : "USER"}
               </span>
             </div>

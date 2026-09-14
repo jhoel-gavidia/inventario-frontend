@@ -32,9 +32,3 @@ export async function updateProduct(
 
   return data;
 }
-
-export async function deleteProduct(
-  id: number
-): Promise<void> {
-  await api.delete(`/productos/${id}`);
-}

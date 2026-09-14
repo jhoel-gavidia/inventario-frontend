@@ -1,11 +1,10 @@
 "use client";
 
 import {
-  useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { deleteProduct, getProducts } from "../services/product-service";
+import { getProducts } from "../services/product-service";
 import type { Product } from "../types/product";
 
 export const productsQueryKey = ["productos"] as const;
@@ -23,7 +22,6 @@ interface UseProductsReturn {
   isLoading: boolean;
   error: string | null;
   refreshProducts: () => Promise<void>;
-  removeProduct: (id: number) => Promise<void>;
 }
 
 export function useProducts(): UseProductsReturn {
@@ -35,18 +33,11 @@ export function useProducts(): UseProductsReturn {
     retry: false,
   });
 
-  const removeProductMutation = useMutation({
-    mutationFn: deleteProduct,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: productsQueryKey }),
-  });
-
   return {
     products: query.data ?? [],
     isLoading: query.isLoading,
     error: getQueryError(query.error),
     refreshProducts: () =>
       queryClient.invalidateQueries({ queryKey: productsQueryKey }),
-    removeProduct: (id) => removeProductMutation.mutateAsync(id),
   };
 }
