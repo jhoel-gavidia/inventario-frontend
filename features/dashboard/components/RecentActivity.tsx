@@ -47,23 +47,23 @@ export function RecentActivity({
   movements,
 }: RecentActivityProps) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-5">
       <div>
-        <h2 className="font-semibold text-slate-900">
+        <h2 className="font-semibold text-on-surface">
           Actividad reciente
         </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-outline">
           Últimos movimientos registrados
         </p>
       </div>
 
       {movements.length === 0 ? (
-        <div className="py-10 text-center text-sm text-slate-400">
+        <div className="py-10 text-center text-sm text-ink-faint">
           No hay movimientos registrados.
         </div>
       ) : (
-        <div className="mt-5 divide-y divide-slate-100">
+        <div className="mt-5 divide-y divide-line-soft">
           {movements.map((movement) => {
             const isEntry = movement.tipo === "ENTRADA";
 
@@ -81,18 +81,18 @@ export function RecentActivity({
                 key={movement.id}
                 className="flex items-center gap-3 py-3"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                  <Icon className="h-4 w-4 text-slate-600" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-soft">
+                  <Icon className="h-4 w-4 text-ink-muted" />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-800">
+                  <p className="text-sm font-medium text-on-surface">
                     {isEntry
                       ? "Entrada de productos"
                       : "Salida de productos"}
                   </p>
 
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="mt-0.5 text-xs text-ink-faint">
                     {movement.detalles.length}{" "}
                     {movement.detalles.length === 1
                       ? "producto"
@@ -102,7 +102,7 @@ export function RecentActivity({
                   </p>
                 </div>
 
-                <span className="shrink-0 text-xs text-slate-400">
+                <span className="shrink-0 text-xs text-ink-faint">
                   {formatRelativeDate(movement.fecha)}
                 </span>
               </div>

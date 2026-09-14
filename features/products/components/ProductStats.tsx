@@ -54,25 +54,25 @@ export function ProductStats({
         return (
           <article
             key={stat.label}
-            className="rounded-xl border border-[#e5e7ef] bg-white p-5"
+            className="rounded-xl border border-line bg-white p-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-[#434655]">
+                <p className="text-sm font-medium text-ink-muted">
                   {stat.label}
                 </p>
 
                 <p
                   className={`mt-2 font-mono text-2xl font-semibold tracking-tight ${
                     stat.danger
-                      ? "text-[#ba1a1a]"
-                      : "text-[#0b1c30]"
+                      ? "text-error"
+                      : "text-on-surface"
                   }`}
                 >
                   {stat.value}
                 </p>
 
-                <p className="mt-1 text-xs text-[#737686]">
+                <p className="mt-1 text-xs text-outline">
                   {stat.description}
                 </p>
               </div>
@@ -80,8 +80,8 @@ export function ProductStats({
               <div
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                   stat.danger
-                    ? "bg-[#fff1f1] text-[#ba1a1a]"
-                    : "bg-[#eff4ff] text-[#2563eb]"
+                    ? "bg-error-soft text-error"
+                    : "bg-surface-container-low text-primary-container"
                 }`}
               >
                 <Icon size={19} />

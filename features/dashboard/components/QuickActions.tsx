@@ -26,7 +26,7 @@ export function QuickActions() {
 
   return (
     <section>
-      <h2 className="mb-3 text-sm font-semibold text-slate-900">
+      <h2 className="mb-3 text-sm font-semibold text-on-surface">
         Acciones rápidas
       </h2>
 
@@ -38,9 +38,9 @@ export function QuickActions() {
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              className="flex items-center gap-3 rounded-xl border border-line bg-white p-4 text-sm font-medium text-ink-muted transition hover:border-line-strong hover:bg-surface-hover"
             >
-              <Icon className="h-5 w-5 text-slate-500" />
+              <Icon className="h-5 w-5 text-outline" />
 
               {action.label}
             </Link>

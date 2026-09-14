@@ -73,10 +73,10 @@ export function Sidebar({ isAdmin }: SidebarProps) {
   }
 
   return (
-    <aside className="fixed left-0 top-0 z-50 flex h-full w-64 flex-col justify-between border-r border-slate-200/80 bg-surface-container-lowest">
+    <aside className="fixed left-0 top-0 z-50 flex h-full w-64 flex-col justify-between border-r border-line/80 bg-surface-container-lowest">
       <div className="flex flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center border-b border-slate-200/80 px-4">
+        <div className="flex h-16 items-center border-b border-line/80 px-4">
           <div className="flex h-10 items-center">
             <span className="text-xl font-bold tracking-tight text-primary">
               R&S Jhoelito
@@ -128,8 +128,8 @@ export function Sidebar({ isAdmin }: SidebarProps) {
       </div>
 
       {/* Footer Sidebar */}
-      <div className="border-t border-slate-200/80 bg-surface-container-low/60 p-4">
-        <div className="mb-2 flex items-center gap-2 rounded-lg border border-slate-200/70 bg-surface-container-lowest p-1">
+      <div className="border-t border-line/80 bg-surface-container-low/60 p-4">
+        <div className="mb-2 flex items-center gap-2 rounded-lg border border-line/70 bg-surface-container-lowest p-1">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
             <Wrench size={18} />
           </div>
@@ -148,7 +148,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center justify-between rounded-xl border border-slate-200/80 bg-surface-container-lowest px-3 py-2 text-error shadow-sm transition-colors hover:bg-error-container/20 hover:text-on-error-container"
+          className="flex w-full items-center justify-between rounded-xl border border-line/80 bg-surface-container-lowest px-3 py-2 text-error shadow-sm transition-colors hover:bg-error-container/20 hover:text-on-error-container"
         >
           <span className="flex items-center gap-1 text-xs font-semibold">
             <LogOut size={18} />

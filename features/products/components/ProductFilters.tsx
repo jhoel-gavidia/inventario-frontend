@@ -43,20 +43,20 @@ export function ProductFilters({
     status !== "ALL";
 
   const inputClassName =
-    "h-10 w-full rounded-lg border border-[#dfe2ea] bg-white px-3 text-sm text-[#0b1c30] outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10";
+    "h-10 w-full rounded-lg border border-line-strong bg-white px-3 text-sm text-on-surface outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10";
 
   return (
-    <section className="rounded-xl border border-[#e5e7ef] bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
             <SlidersHorizontal size={17} />
           </div>
 
           <div>
             <h2 className="font-semibold">Filtros</h2>
 
-            <p className="mt-0.5 text-xs text-[#737686]">
+            <p className="mt-0.5 text-xs text-outline">
               Refina la lista de productos
             </p>
           </div>
@@ -66,7 +66,7 @@ export function ProductFilters({
           <button
             type="button"
             onClick={onClear}
-            className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-[#737686] transition hover:text-[#0b1c30] sm:self-auto"
+            className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-outline transition hover:text-on-surface sm:self-auto"
           >
             <X size={14} />
             Limpiar filtros
@@ -78,7 +78,7 @@ export function ProductFilters({
         <div className="relative">
           <Search
             size={17}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#737686]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
           />
 
           <input
@@ -89,7 +89,7 @@ export function ProductFilters({
             }
             placeholder="Buscar por nombre o código..."
             aria-label="Buscar por nombre o código"
-            className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white pl-9 pr-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#737686] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10"
+            className="h-10 w-full rounded-lg border border-line-strong bg-white pl-9 pr-3 text-sm text-on-surface outline-none transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10"
           />
         </div>
 
@@ -137,14 +137,14 @@ export function ProductFilters({
         </select>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-[#eef0f5] pt-4">
-        <p className="text-xs text-[#737686]">
+      <div className="mt-4 flex items-center justify-between border-t border-line-soft pt-4">
+        <p className="text-xs text-outline">
           Mostrando{" "}
-          <span className="font-medium text-[#0b1c30]">
+          <span className="font-medium text-on-surface">
             {totalResults}
           </span>{" "}
           de{" "}
-          <span className="font-medium text-[#0b1c30]">
+          <span className="font-medium text-on-surface">
             {totalProducts}
           </span>{" "}
           productos

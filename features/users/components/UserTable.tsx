@@ -75,16 +75,16 @@ export function UserTable({
 
   return (
     <section className="min-w-0 xl:col-span-8">
-      <div className="rounded-xl border border-[#e5e7ef] bg-white">
+      <div className="rounded-xl border border-line bg-white">
         {/* Header */}
-        <div className="border-b border-[#eef0f5] p-5">
+        <div className="border-b border-line-soft p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-[#0b1c30]">
+              <h3 className="text-base font-semibold text-on-surface">
                 Directorio de Usuarios
               </h3>
 
-              <p className="mt-1 text-xs text-[#737686]">
+              <p className="mt-1 text-xs text-outline">
                 Credenciales y nivel de acceso
               </p>
             </div>
@@ -92,12 +92,12 @@ export function UserTable({
         </div>
 
         {/* Search + Filters */}
-        <div className="border-b border-[#eef0f5] px-5 py-4">
+        <div className="border-b border-line-soft px-5 py-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:max-w-sm">
               <Search
                 size={17}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#737686]"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
               />
 
               <input
@@ -107,11 +107,11 @@ export function UserTable({
                   setSearch(event.target.value)
                 }
                 placeholder="Buscar usuario..."
-                className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-[#737686] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10"
+                className="h-10 w-full rounded-lg border border-line-strong bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10"
               />
             </div>
 
-            <div className="flex items-center overflow-x-auto rounded-lg border border-[#e5e7ef] bg-[#f8f9ff] p-1">
+            <div className="flex items-center overflow-x-auto rounded-lg border border-line bg-background p-1">
               <FilterButton
                 active={
                   roleFilter === "ALL" &&
@@ -162,7 +162,7 @@ export function UserTable({
         <div className="overflow-x-auto">
           <table className="w-full min-w-175 text-left">
             <thead>
-              <tr className="border-b border-[#eef0f5] text-xs uppercase tracking-wide text-[#737686]">
+              <tr className="border-b border-line-soft text-xs uppercase tracking-wide text-outline">
                 <th className="w-16 px-5 py-3 text-center font-medium">
                   ID
                 </th>
@@ -185,7 +185,7 @@ export function UserTable({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-[#f0f1f5]">
+            <tbody className="divide-y divide-line-faint">
               {isLoading ? (
                 <LoadingRows />
               ) : error ? (
@@ -194,14 +194,14 @@ export function UserTable({
                     colSpan={5}
                     className="px-5 py-14 text-center"
                   >
-                    <p className="text-sm font-medium text-[#ba1a1a]">
+                    <p className="text-sm font-medium text-error">
                       No se pudieron cargar los usuarios.
                     </p>
 
                     <button
                       type="button"
                       onClick={onRetry}
-                      className="mt-2 text-xs font-medium text-[#2563eb] hover:underline"
+                      className="mt-2 text-xs font-medium text-primary-container hover:underline"
                     >
                       Reintentar
                     </button>
@@ -229,15 +229,15 @@ export function UserTable({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-[#eef0f5] px-5 py-4">
-          <span className="text-xs text-[#737686]">
+        <div className="flex items-center justify-between border-t border-line-soft px-5 py-4">
+          <span className="text-xs text-outline">
             {filteredUsers.length}{" "}
             {filteredUsers.length === 1
               ? "usuario"
               : "usuarios"}
           </span>
 
-          <span className="text-xs text-[#737686]">
+          <span className="text-xs text-outline">
             Vista completa
           </span>
         </div>
@@ -263,11 +263,11 @@ function UserRow({
 
   return (
     <tr
-      className={`transition hover:bg-[#fafbff] ${
-        !user.estado ? "bg-[#f8f9ff]" : ""
+      className={`transition hover:bg-surface-hover ${
+        !user.estado ? "bg-background" : ""
       }`}
     >
-      <td className="px-5 py-4 text-center font-mono text-xs font-medium text-[#737686]">
+      <td className="px-5 py-4 text-center font-mono text-xs font-medium text-outline">
         #{user.id}
       </td>
 
@@ -280,18 +280,18 @@ function UserRow({
           <div
             className={`flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-bold ${
               user.estado
-                ? "bg-[#eff4ff] text-[#2563eb]"
-                : "bg-[#f1f3f7] text-[#737686]"
+                ? "bg-surface-container-low text-primary-container"
+                : "bg-neutral-soft text-outline"
             }`}
           >
             {initial}
           </div>
 
           <span
-            className={`rounded-full bg-[#eff4ff] px-2.5 py-1 font-mono text-xs ${
+            className={`rounded-full bg-surface-container-low px-2.5 py-1 font-mono text-xs ${
               user.estado
-                ? "font-semibold text-[#2563eb]"
-                : "font-medium text-[#737686] line-through"
+                ? "font-semibold text-primary-container"
+                : "font-medium text-outline line-through"
             }`}
           >
             {user.username}
@@ -314,7 +314,7 @@ function UserRow({
             onClick={() => onEdit(user)}
             title="Editar usuario"
             aria-label={`Editar ${user.username}`}
-            className="rounded-lg p-2 text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb]"
+            className="rounded-lg p-2 text-outline transition hover:bg-surface-container-low hover:text-primary-container"
           >
             <Edit3 size={16} />
           </button>
@@ -333,10 +333,10 @@ function UserRow({
                 ? `Desactivar ${user.username}`
                 : `Activar ${user.username}`
             }
-            className="rounded-lg p-2 text-[#737686] transition hover:bg-[#ecfdf3] hover:text-[#16823b] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg p-2 text-outline transition hover:bg-success-container hover:text-success disabled:cursor-not-allowed disabled:opacity-40"
           >
             {processing ? (
-              <span className="block h-4 w-4 animate-spin rounded-full border-2 border-[#e5e7ef] border-t-[#2563eb]" />
+              <span className="block h-4 w-4 animate-spin rounded-full border-2 border-line border-t-primary-container" />
             ) : user.estado ? (
               <Power size={16} />
             ) : (
@@ -354,8 +354,8 @@ function RoleBadge({ role }: { role: UserRole }) {
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
         role === "ADMIN"
-          ? "bg-[#2563eb] text-white"
-          : "bg-[#f1f3f7] text-[#434655]"
+          ? "bg-primary-container text-white"
+          : "bg-neutral-soft text-ink-muted"
       }`}
     >
       {role}
@@ -368,13 +368,13 @@ function StatusBadge({ active }: { active: boolean }) {
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
         active
-          ? "bg-[#ecfdf3] text-[#16823b]"
-          : "bg-[#f1f3f7] text-[#737686]"
+          ? "bg-success-container text-success"
+          : "bg-neutral-soft text-outline"
       }`}
     >
       <span
         className={`h-1.5 w-1.5 rounded-full ${
-          active ? "bg-[#16823b]" : "bg-[#737686]"
+          active ? "bg-success" : "bg-outline"
         }`}
       />
 
@@ -398,8 +398,8 @@ function FilterButton({
       onClick={onClick}
       className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition ${
         active
-          ? "bg-white text-[#2563eb] shadow-sm"
-          : "text-[#737686] hover:text-[#434655]"
+          ? "bg-white text-primary-container shadow-sm"
+          : "text-outline hover:text-ink-muted"
       }`}
     >
       {children}
@@ -415,7 +415,7 @@ function EmptyState() {
         className="px-5 py-14 text-center"
       >
         <div className="mx-auto max-w-sm">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f4f8] text-[#737686]">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-soft text-outline">
             <UserRound size={18} />
           </div>
 
@@ -423,7 +423,7 @@ function EmptyState() {
             No hay usuarios
           </p>
 
-          <p className="mt-1 text-xs text-[#737686]">
+          <p className="mt-1 text-xs text-outline">
             No se encontraron usuarios con los filtros
             actuales.
           </p>
@@ -439,7 +439,7 @@ function LoadingRows() {
       {Array.from({ length: 4 }).map((_, index) => (
         <tr key={index}>
           <td colSpan={5} className="px-5 py-4">
-            <div className="h-5 animate-pulse rounded bg-[#f1f3f7]" />
+            <div className="h-5 animate-pulse rounded bg-neutral-soft" />
           </td>
         </tr>
       ))}

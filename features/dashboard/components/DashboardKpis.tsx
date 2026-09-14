@@ -48,25 +48,25 @@ export function DashboardKpis({ stats }: DashboardKpisProps) {
         return (
           <article
             key={kpi.label}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-line bg-white p-5"
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-outline">
                   {kpi.label}
                 </p>
 
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-on-surface">
                   {kpi.value.toLocaleString("es-PE")}
                 </p>
 
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-ink-faint">
                   {kpi.description}
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-                <Icon className="h-5 w-5 text-slate-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-soft">
+                <Icon className="h-5 w-5 text-ink-muted" />
               </div>
             </div>
           </article>

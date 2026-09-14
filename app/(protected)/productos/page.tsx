@@ -194,7 +194,7 @@ function ProductosPageContent() {
   }
 
   return (
-    <main className="min-h-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] sm:px-6 lg:px-8">
+    <main className="min-h-full bg-background px-4 py-6 text-on-surface sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px]">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -203,7 +203,7 @@ function ProductosPageContent() {
               Productos
             </h1>
 
-            <p className="mt-1 text-sm text-[#737686]">
+            <p className="mt-1 text-sm text-outline">
               Gestiona productos, precios y existencias del inventario.
             </p>
           </div>
@@ -211,7 +211,7 @@ function ProductosPageContent() {
           <button
             type="button"
             onClick={handleCreate}
-            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-[#dce9ff] px-4 text-sm font-medium text-[#0b1c30] transition hover:bg-[#d3e4fe]"
+            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-primary-container px-4 text-sm font-medium text-white transition hover:bg-accent-hover"
           >
             <PackagePlus size={17} />
             Nuevo producto
@@ -247,17 +247,17 @@ function ProductosPageContent() {
         {/* Tabla */}
         <div className="mt-6">
           {isLoading ? (
-            <div className="rounded-xl border border-[#e5e7ef] bg-white p-10 text-center text-sm text-[#737686]">
+            <div className="rounded-xl border border-line bg-white p-10 text-center text-sm text-outline">
               Cargando productos...
             </div>
           ) : error ? (
-            <div className="rounded-xl border border-[#e5e7ef] bg-white p-6 text-center">
-              <p className="text-sm font-medium text-[#ba1a1a]">{error}</p>
+            <div className="rounded-xl border border-line bg-white p-6 text-center">
+              <p className="text-sm font-medium text-error">{error}</p>
 
               <button
                 type="button"
                 onClick={() => void handleRetry()}
-                className="mt-2 text-xs font-medium text-[#2563eb] hover:underline"
+                className="mt-2 text-xs font-medium text-primary-container hover:underline"
               >
                 Reintentar
               </button>
@@ -279,38 +279,38 @@ function ProductosPageContent() {
 
         {/* Resumen inferior */}
         <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <article className="rounded-xl border border-[#e5e7ef] bg-white p-5">
+          <article className="rounded-xl border border-line bg-white p-5">
             <div className="mb-5">
               <h2 className="font-semibold">
                 Distribución por categoría
               </h2>
 
-              <p className="mt-1 text-xs text-[#737686]">
+              <p className="mt-1 text-xs text-outline">
                 Stock actual agrupado por categoría
               </p>
             </div>
 
             <div className="space-y-4">
               {categoryDistribution.length === 0 ? (
-                <p className="text-sm text-[#737686]">
+                <p className="text-sm text-outline">
                   No hay categorías registradas.
                 </p>
               ) : (
                 categoryDistribution.map((item) => (
                   <div key={item.id}>
                     <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-sm text-[#0b1c30]">
+                      <span className="text-sm text-on-surface">
                         {item.nombre}
                       </span>
 
-                      <span className="text-xs text-[#737686]">
+                      <span className="text-xs text-outline">
                         {item.stock} uds. · {item.percentage}%
                       </span>
                     </div>
 
-                    <div className="h-1.5 overflow-hidden rounded-full bg-[#eff4ff]">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-low">
                       <div
-                        className="h-full rounded-full bg-[#2563eb]"
+                        className="h-full rounded-full bg-primary-container"
                         style={{
                           width: `${item.percentage}%`,
                         }}
@@ -322,41 +322,41 @@ function ProductosPageContent() {
             </div>
           </article>
 
-          <article className="rounded-xl border border-[#e5e7ef] bg-white p-5">
+          <article className="rounded-xl border border-line bg-white p-5">
             <div className="mb-5">
               <h2 className="font-semibold">Resumen económico</h2>
 
-              <p className="mt-1 text-xs text-[#737686]">
+              <p className="mt-1 text-xs text-outline">
                 Valor actual de las existencias
               </p>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#737686]">Valor de compra</span>
+                <span className="text-sm text-outline">Valor de compra</span>
 
-                <span className="text-sm font-semibold text-[#0b1c30]">
+                <span className="text-sm font-semibold text-on-surface">
                   {currencyFormatter.format(totalInventoryValue)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#737686]">
+                <span className="text-sm text-outline">
                   Valor potencial de venta
                 </span>
 
-                <span className="text-sm font-semibold text-[#0b1c30]">
+                <span className="text-sm font-semibold text-on-surface">
                   {currencyFormatter.format(projectedSalesValue)}
                 </span>
               </div>
 
-              <div className="border-t border-[#eef0f5] pt-4">
+              <div className="border-t border-line-soft pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#0b1c30]">
+                  <span className="text-sm font-medium text-on-surface">
                     Margen potencial
                   </span>
 
-                  <span className="text-sm font-semibold text-[#2563eb]">
+                  <span className="text-sm font-semibold text-primary-container">
                     {currencyFormatter.format(
                       projectedSalesValue - totalInventoryValue,
                     )}
@@ -368,11 +368,11 @@ function ProductosPageContent() {
         </section>
 
         {/* Auditoría */}
-        <section className="mt-6 rounded-xl border border-[#e5e7ef] bg-white p-5">
+        <section className="mt-6 rounded-xl border border-line bg-white p-5">
           <div>
             <h2 className="font-semibold">Auditoría</h2>
 
-            <p className="mt-1 text-xs text-[#737686]">
+            <p className="mt-1 text-xs text-outline">
               Las operaciones de inventario se registran automáticamente.
             </p>
           </div>

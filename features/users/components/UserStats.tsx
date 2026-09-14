@@ -46,7 +46,7 @@ export function UserStats({ users }: UserStatsProps) {
         description={
           <>
             Rol{" "}
-            <span className="font-mono font-semibold text-[#0b1c30]">
+            <span className="font-mono font-semibold text-on-surface">
               ADMIN
             </span>
           </>
@@ -60,7 +60,7 @@ export function UserStats({ users }: UserStatsProps) {
         description={
           <>
             Cuentas{" "}
-            <span className="font-mono font-semibold text-[#0b1c30]">
+            <span className="font-mono font-semibold text-on-surface">
               USER
             </span>
           </>
@@ -74,7 +74,7 @@ export function UserStats({ users }: UserStatsProps) {
         description={
           <>
             {activeUsers > 0 && (
-              <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#16823b]" />
+              <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success" />
             )}
             {Math.round(
               totalUsers > 0
@@ -104,10 +104,10 @@ function MetricCard({
   description,
 }: MetricCardProps) {
   return (
-    <article className="rounded-xl border border-[#e5e7ef] bg-white p-5">
+    <article className="rounded-xl border border-line bg-white p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-[#434655]">
+          <p className="text-sm font-medium text-ink-muted">
             {label}
           </p>
 
@@ -115,12 +115,12 @@ function MetricCard({
             {value}
           </p>
 
-          <p className="mt-1 text-xs text-[#737686]">
+          <p className="mt-1 text-xs text-outline">
             {description}
           </p>
         </div>
 
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
           {icon}
         </div>
       </div>

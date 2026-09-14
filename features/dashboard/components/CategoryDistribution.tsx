@@ -15,19 +15,19 @@ export function CategoryDistribution({
       : 0;
 
   return (
-    <section className="rounded-xl border border-[#e5e7ef] bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-5">
       <div>
-        <h2 className="font-semibold text-[#0b1c30]">
+        <h2 className="font-semibold text-on-surface">
           Distribución por categorías
         </h2>
 
-        <p className="mt-1 text-xs text-[#737686]">
+        <p className="mt-1 text-xs text-outline">
           Productos registrados por categoría.
         </p>
       </div>
 
       {visibleCategories.length === 0 ? (
-        <div className="py-10 text-center text-sm text-[#9a9dab]">
+        <div className="py-10 text-center text-sm text-ink-faint">
           No hay categorías disponibles.
         </div>
       ) : (
@@ -42,18 +42,18 @@ export function CategoryDistribution({
               return (
                 <div key={category.id}>
                   <div className="mb-2 flex items-center justify-between gap-4">
-                    <span className="truncate text-sm font-medium text-[#434655]">
+                    <span className="truncate text-sm font-medium text-ink-muted">
                       {category.nombre}
                     </span>
 
-                    <span className="shrink-0 font-mono text-xs text-[#737686]">
+                    <span className="shrink-0 font-mono text-xs text-outline">
                       {productCount}
                     </span>
                   </div>
 
-                  <div className="h-2 overflow-hidden rounded-full bg-[#eff4ff]">
+                  <div className="h-2 overflow-hidden rounded-full bg-surface-container-low">
                     <div
-                      className="h-full rounded-full bg-[#2563eb] transition-all"
+                      className="h-full rounded-full bg-primary-container transition-all"
                       style={{
                         width: `${percentage}%`,
                       }}

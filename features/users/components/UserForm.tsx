@@ -144,24 +144,24 @@ export function UserForm({
   }
 
   const inputClassName =
-    "h-10 w-full rounded-lg border bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:ring-2 disabled:cursor-not-allowed disabled:bg-[#f3f4f7]";
+    "h-10 w-full rounded-lg border bg-white px-3 text-sm text-on-surface outline-none transition placeholder:text-ink-faint focus:ring-2 disabled:cursor-not-allowed disabled:bg-neutral-soft";
 
   const inputBorderClassName = fieldError
-    ? "border-[#d38a8a] focus:border-[#ba1a1a] focus:ring-[#ba1a1a]/10"
-    : "border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10";
+    ? "border-line-error-strong focus:border-error focus:ring-error/10"
+    : "border-line-strong focus:border-primary-container focus:ring-primary-container/10";
 
   return (
     <div className="sticky top-6">
-      <div className="rounded-xl border border-[#e5e7ef] bg-white">
+      <div className="rounded-xl border border-line bg-white">
 
         {/* Header */}
-        <div className="border-b border-[#eef0f5] px-5 py-5">
+        <div className="border-b border-line-soft px-5 py-5">
           <div className="flex items-start justify-between gap-4">
 
             <div>
               <div className="flex items-center gap-2">
 
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
                   <CheckCircle size={17} />
                 </div>
 
@@ -173,7 +173,7 @@ export function UserForm({
 
               </div>
 
-              <p className="mt-2 text-xs leading-5 text-[#737686]">
+              <p className="mt-2 text-xs leading-5 text-outline">
                 {isEditing
                   ? "Actualiza los datos, rol y estado de la cuenta."
                   : "Crea una cuenta para acceder al sistema del taller."}
@@ -186,7 +186,7 @@ export function UserForm({
               disabled={isSaving}
               title="Restablecer formulario"
               aria-label="Restablecer formulario"
-              className="rounded-lg p-2 text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg p-2 text-outline transition hover:bg-surface-container-low hover:text-primary-container disabled:cursor-not-allowed disabled:opacity-40"
             >
               <RefreshCw size={17} />
             </button>
@@ -206,12 +206,12 @@ export function UserForm({
 
               <label
                 htmlFor="user-username"
-                className="text-xs font-semibold text-[#0b1c30]"
+                className="text-xs font-semibold text-on-surface"
               >
                 Nombre de usuario
               </label>
 
-              <span className="text-[11px] text-[#737686]">
+              <span className="text-[11px] text-outline">
                 {username.length}/50
               </span>
 
@@ -234,7 +234,7 @@ export function UserForm({
             />
 
             {fieldError ? (
-              <p className="mt-1.5 flex items-start gap-1 text-xs text-[#ba1a1a]">
+              <p className="mt-1.5 flex items-start gap-1 text-xs text-error">
                 <AlertCircle
                   size={14}
                   className="mt-0.5 shrink-0"
@@ -243,7 +243,7 @@ export function UserForm({
                 {fieldError}
               </p>
             ) : (
-              <p className="mt-1.5 text-xs text-[#737686]">
+              <p className="mt-1.5 text-xs text-outline">
                 Usa un nombre claro para identificar la cuenta.
               </p>
             )}
@@ -254,7 +254,7 @@ export function UserForm({
             <div>
               <label
                 htmlFor="user-password"
-                className="mb-2 block text-xs font-semibold text-[#0b1c30]"
+                className="mb-2 block text-xs font-semibold text-on-surface"
               >
                 Contraseña
               </label>
@@ -287,7 +287,7 @@ export function UserForm({
                     )
                   }
                   tabIndex={-1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-[#737686] hover:bg-[#eff4ff] hover:text-[#2563eb]"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-outline hover:bg-surface-container-low hover:text-primary-container"
                 >
                   {showPassword ? (
                     <EyeOff size={16} />
@@ -297,7 +297,7 @@ export function UserForm({
                 </button>
               </div>
 
-              <p className="mt-1.5 text-xs text-[#737686]">
+              <p className="mt-1.5 text-xs text-outline">
                 La contraseña debe tener al menos 8 caracteres.
               </p>
             </div>
@@ -307,7 +307,7 @@ export function UserForm({
           <div>
             <label
               htmlFor="user-role"
-              className="mb-2 block text-xs font-semibold text-[#0b1c30]"
+              className="mb-2 block text-xs font-semibold text-on-surface"
             >
               Rol
             </label>
@@ -321,7 +321,7 @@ export function UserForm({
                 )
               }
               disabled={isSaving}
-              className={`${inputClassName} border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10`}
+              className={`${inputClassName} border-line-strong focus:border-primary-container focus:ring-primary-container/10`}
             >
               <option value="USER">
                 USER — Operación Taller
@@ -337,7 +337,7 @@ export function UserForm({
           <div>
             <label
               htmlFor="user-status"
-              className="mb-2 block text-xs font-semibold text-[#0b1c30]"
+              className="mb-2 block text-xs font-semibold text-on-surface"
             >
               Estado
             </label>
@@ -351,7 +351,7 @@ export function UserForm({
                 )
               }
               disabled={isSaving}
-              className={`${inputClassName} border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10`}
+              className={`${inputClassName} border-line-strong focus:border-primary-container focus:ring-primary-container/10`}
             >
               <option value="true">
                 Activo
@@ -365,7 +365,7 @@ export function UserForm({
 
           {/* Server error */}
           {serverError && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
+            <div className="flex items-start gap-2.5 rounded-lg border border-line-error bg-error-container px-3.5 py-3 text-xs text-error">
               <AlertCircle
                 size={16}
                 className="mt-0.5 shrink-0"
@@ -383,7 +383,7 @@ export function UserForm({
                 type="button"
                 onClick={handleCancel}
                 disabled={isSaving}
-                className="h-10 flex-1 rounded-lg border border-[#dfe2ea] px-4 text-sm font-medium text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 flex-1 rounded-lg border border-line-strong px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -392,7 +392,7 @@ export function UserForm({
             <button
               type="submit"
               disabled={isInvalid}
-              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-4 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary-container px-4 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSaving ? (
                 <>

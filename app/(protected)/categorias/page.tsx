@@ -212,7 +212,7 @@ export default function CategoriasPage() {
   }
 
   return (
-    <main className="min-h-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] sm:px-6 lg:px-8">
+    <main className="min-h-full bg-background px-4 py-6 text-on-surface sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px]">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -221,7 +221,7 @@ export default function CategoriasPage() {
               Gestión de Categorías
             </h1>
 
-            <p className="mt-1 text-sm text-[#737686]">
+            <p className="mt-1 text-sm text-outline">
               Familias y agrupaciones técnicas de repuestos
               del taller.
             </p>
@@ -237,7 +237,7 @@ export default function CategoriasPage() {
               disabled={categories.length === 0}
               aria-haspopup="menu"
               aria-expanded={exportOpen}
-              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#dce9ff] px-4 text-sm font-medium text-[#0b1c30] transition hover:bg-[#d3e4fe] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary-container px-4 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download size={17} />
 
@@ -260,19 +260,19 @@ export default function CategoriasPage() {
 
                 <div
                   role="menu"
-                  className="absolute right-0 z-40 mt-2 w-64 rounded-xl border border-[#e5e7ef] bg-white p-1.5 shadow-lg"
+                  className="absolute right-0 z-40 mt-2 w-64 rounded-xl border border-line bg-white p-1.5 shadow-lg"
                 >
                   <button
                     type="button"
                     role="menuitem"
                     onClick={handleExportAll}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-[#f5f7ff]"
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-surface-tint"
                   >
                     <span className="text-sm font-medium">
                       Exportar todo
                     </span>
 
-                    <span className="rounded-full bg-[#eff4ff] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#2563eb]">
+                    <span className="rounded-full bg-surface-container-low px-2 py-0.5 font-mono text-[11px] font-semibold text-primary-container">
                       {categories.length}
                     </span>
                   </button>
@@ -284,13 +284,13 @@ export default function CategoriasPage() {
                     disabled={
                       filteredCategories.length === 0
                     }
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-[#f5f7ff] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-surface-tint disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span className="text-sm font-medium">
                       Exportar resultados
                     </span>
 
-                    <span className="rounded-full bg-[#eff4ff] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#2563eb]">
+                    <span className="rounded-full bg-surface-container-low px-2 py-0.5 font-mono text-[11px] font-semibold text-primary-container">
                       {filteredCategories.length}
                     </span>
                   </button>

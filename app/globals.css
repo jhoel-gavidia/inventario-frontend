@@ -15,6 +15,37 @@
   --on-surface: #0b1c30;
   --secondary: #565e74;
   --outline: #737686;
+
+  --ink-muted: #434655;
+  --ink-faint: #9a9dab;
+
+  --success: #16823b;
+  --success-container: #ecfdf3;
+
+  --error: #ba1a1a;
+  --error-container: #fff7f7;
+  --error-soft: #fff1f1;
+  --error-border: #f2cccc;
+  --error-border-strong: #d38a8a;
+  --error-border-soft: #f0caca;
+
+  --warning: #b7791f;
+  --warning-container: #fff8eb;
+
+  --line: #e5e7ef;
+  --line-strong: #dfe2ea;
+  --line-soft: #eef0f5;
+  --line-faint: #f0f1f5;
+  --line-muted: #cbd2df;
+
+  --neutral-soft: #f1f3f7;
+  --surface-hover: #fafbff;
+  --surface-tint: #f5f7ff;
+
+  --accent-hover: #1d4ed8;
+  --accent-soft-hover: #d3e4fe;
+
+  --overlay: #0f172a;
 }
 
 @theme inline {
@@ -32,6 +63,37 @@
   --color-on-surface: var(--on-surface);
   --color-secondary: var(--secondary);
   --color-outline: var(--outline);
+
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-success: var(--success);
+  --color-success-container: var(--success-container);
+
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+  --color-error-soft: var(--error-soft);
+  --color-line-error: var(--error-border);
+  --color-line-error-strong: var(--error-border-strong);
+  --color-line-error-soft: var(--error-border-soft);
+
+  --color-warning: var(--warning);
+  --color-warning-container: var(--warning-container);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-soft: var(--line-soft);
+  --color-line-faint: var(--line-faint);
+  --color-line-muted: var(--line-muted);
+
+  --color-neutral-soft: var(--neutral-soft);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-tint: var(--surface-tint);
+
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft-hover: var(--accent-soft-hover);
+
+  --color-overlay: var(--overlay);
 
   --font-sans: var(--font-geist);
   --font-mono: var(--font-geist-mono);

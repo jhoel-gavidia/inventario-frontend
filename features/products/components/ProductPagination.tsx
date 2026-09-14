@@ -62,14 +62,14 @@ export function ProductPagination({
   const canNext = currentPage < totalPages;
 
   return (
-    <div className="flex flex-col gap-4 border-t border-[#eef0f5] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs text-[#737686]">
+    <div className="flex flex-col gap-4 border-t border-line-soft px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs text-outline">
         Mostrando{" "}
-        <span className="font-medium text-[#0b1c30]">
+        <span className="font-medium text-on-surface">
           {firstItem}-{lastItem}
         </span>{" "}
         de{" "}
-        <span className="font-medium text-[#0b1c30]">
+        <span className="font-medium text-on-surface">
           {totalItems}
         </span>{" "}
         productos
@@ -85,7 +85,7 @@ export function ProductPagination({
             onClick={() => onPageChange(currentPage - 1)}
             disabled={!canPrevious}
             aria-label="Página anterior"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-[#e5e7ef] text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowLeft size={15} />
           </button>
@@ -95,7 +95,7 @@ export function ProductPagination({
               typeof page === "string" ? (
                 <span
                   key={`${page}-${index}`}
-                  className="flex h-8 w-8 items-center justify-center text-xs text-[#737686]"
+                  className="flex h-8 w-8 items-center justify-center text-xs text-outline"
                 >
                   ...
                 </span>
@@ -107,8 +107,8 @@ export function ProductPagination({
                   aria-current={currentPage === page ? "page" : undefined}
                   className={`h-8 min-w-8 rounded-md px-2 text-xs font-medium transition ${
                     currentPage === page
-                      ? "bg-[#2563eb] text-white"
-                      : "text-[#434655] hover:bg-[#f8f9ff] hover:text-[#0b1c30]"
+                      ? "bg-primary-container text-white"
+                      : "text-ink-muted hover:bg-background hover:text-on-surface"
                   }`}
                 >
                   {page}
@@ -117,7 +117,7 @@ export function ProductPagination({
             )}
           </div>
 
-          <span className="px-2 text-xs font-medium text-[#434655] sm:hidden">
+          <span className="px-2 text-xs font-medium text-ink-muted sm:hidden">
             {currentPage} / {totalPages}
           </span>
 
@@ -126,7 +126,7 @@ export function ProductPagination({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={!canNext}
             aria-label="Página siguiente"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-[#e5e7ef] text-[#434655] transition hover:bg-[#f8f9ff] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowRight size={15} />
           </button>

@@ -34,13 +34,13 @@ export function CategoryTable({
 }: CategoryTableProps) {
   return (
     <section className="min-w-0 xl:col-span-8">
-      <div className="rounded-xl border border-[#e5e7ef] bg-white">
-        <div className="border-b border-[#eef0f5] p-4">
+      <div className="rounded-xl border border-line bg-white">
+        <div className="border-b border-line-soft p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative w-full sm:max-w-sm">
               <Search
                 size={17}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#737686]"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
               />
 
               <input
@@ -51,11 +51,11 @@ export function CategoryTable({
                 }
                 placeholder="Buscar categoría..."
                 aria-label="Buscar categoría"
-                className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-[#737686] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10"
+                className="h-10 w-full rounded-lg border border-line-strong bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10"
               />
             </div>
 
-            <span className="text-xs text-[#737686]">
+            <span className="text-xs text-outline">
               {categories.length}{" "}
               {categories.length === 1
                 ? "categoría"
@@ -67,7 +67,7 @@ export function CategoryTable({
         <div className="overflow-x-auto">
           <table className="w-full min-w-162.5 text-left">
             <thead>
-              <tr className="border-b border-[#eef0f5] text-xs uppercase tracking-wide text-[#737686]">
+              <tr className="border-b border-line-soft text-xs uppercase tracking-wide text-outline">
                 <th className="w-20 px-5 py-3 font-medium">
                   ID
                 </th>
@@ -86,7 +86,7 @@ export function CategoryTable({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-[#f0f1f5]">
+            <tbody className="divide-y divide-line-faint">
               {isLoading ? (
                 <LoadingRows />
               ) : error ? (
@@ -95,14 +95,14 @@ export function CategoryTable({
                     colSpan={4}
                     className="px-5 py-14 text-center"
                   >
-                    <p className="text-sm font-medium text-[#ba1a1a]">
+                    <p className="text-sm font-medium text-error">
                       No se pudieron cargar las categorías.
                     </p>
 
                     <button
                       type="button"
                       onClick={onRetry}
-                      className="mt-2 text-xs font-medium text-[#2563eb] hover:underline"
+                      className="mt-2 text-xs font-medium text-primary-container hover:underline"
                     >
                       Reintentar
                     </button>
@@ -117,14 +117,14 @@ export function CategoryTable({
                   return (
                     <tr
                       key={category.id}
-                      className="transition hover:bg-[#fafbff]"
+                      className="transition hover:bg-surface-hover"
                     >
-                      <td className="px-5 py-4 font-mono text-xs font-medium text-[#737686]">
+                      <td className="px-5 py-4 font-mono text-xs font-medium text-outline">
                         #{category.id}
                       </td>
 
                       <td className="px-5 py-4">
-                        <span className="text-sm font-semibold text-[#0b1c30]">
+                        <span className="text-sm font-semibold text-on-surface">
                           {category.nombre}
                         </span>
                       </td>
@@ -140,7 +140,7 @@ export function CategoryTable({
                               ? "repuesto"
                               : "repuestos"
                           } de ${category.nombre}`}
-                          className="inline-flex items-center gap-1 rounded-full bg-[#eff4ff] px-2.5 py-1 font-mono text-xs font-semibold text-[#2563eb] transition hover:bg-[#2563eb] hover:text-white"
+                          className="inline-flex items-center gap-1 rounded-full bg-surface-container-low px-2.5 py-1 font-mono text-xs font-semibold text-primary-container transition hover:bg-primary-container hover:text-white"
                         >
                           {count}
 
@@ -161,7 +161,7 @@ export function CategoryTable({
                             onClick={() => onEdit(category)}
                             title="Editar categoría"
                             aria-label={`Editar ${category.nombre}`}
-                            className="rounded-lg p-2 text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb]"
+                            className="rounded-lg p-2 text-outline transition hover:bg-surface-container-low hover:text-primary-container"
                           >
                             <Pencil size={16} />
                           </button>
@@ -171,7 +171,7 @@ export function CategoryTable({
                             onClick={() => onDelete(category)}
                             title="Eliminar categoría"
                             aria-label={`Eliminar ${category.nombre}`}
-                            className="rounded-lg p-2 text-[#737686] transition hover:bg-[#fff1f1] hover:text-[#ba1a1a]"
+                            className="rounded-lg p-2 text-outline transition hover:bg-error-soft hover:text-error"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -185,8 +185,8 @@ export function CategoryTable({
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#eef0f5] px-5 py-4">
-          <span className="text-xs text-[#737686]">
+        <div className="flex items-center justify-between border-t border-line-soft px-5 py-4">
+          <span className="text-xs text-outline">
             {categories.length}{" "}
             {categories.length === 1
               ? "categoría"
@@ -194,7 +194,7 @@ export function CategoryTable({
             encontradas
           </span>
 
-          <span className="text-xs text-[#737686]">
+          <span className="text-xs text-outline">
             Vista completa
           </span>
         </div>
@@ -211,7 +211,7 @@ function EmptyState() {
         className="px-5 py-14 text-center"
       >
         <div className="mx-auto max-w-sm">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f4f8] text-[#737686]">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-soft text-outline">
             <Tag size={18} />
           </div>
 
@@ -219,7 +219,7 @@ function EmptyState() {
             No hay categorías
           </p>
 
-          <p className="mt-1 text-xs text-[#737686]">
+          <p className="mt-1 text-xs text-outline">
             No se encontraron categorías con el criterio de
             búsqueda.
           </p>
@@ -238,7 +238,7 @@ function LoadingRows() {
             colSpan={4}
             className="px-5 py-4"
           >
-            <div className="h-5 animate-pulse rounded bg-[#f1f3f7]" />
+            <div className="h-5 animate-pulse rounded bg-neutral-soft" />
           </td>
         </tr>
       ))}

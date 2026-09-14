@@ -20,16 +20,16 @@ export default function DashboardPage() {
   } = useDashboard();
 
   return (
-    <main className="min-h-full bg-[#f8f9ff] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-full bg-background px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px]">
 
         <header className="mb-6 flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-[#0b1c30]">
+            <h1 className="text-2xl font-semibold tracking-tight text-on-surface">
               Dashboard
             </h1>
 
-            <p className="mt-1 text-sm text-[#737686]">
+            <p className="mt-1 text-sm text-outline">
               Resumen general del inventario.
             </p>
           </div>
@@ -38,7 +38,7 @@ export default function DashboardPage() {
             type="button"
             onClick={() => void refreshDashboard()}
             disabled={isLoading}
-            className="flex h-10 items-center gap-2 rounded-lg border border-[#dfe2ea] bg-white px-4 text-sm font-medium text-[#434655] transition hover:bg-[#f8f9ff] disabled:opacity-50"
+            className="flex h-10 items-center gap-2 rounded-lg border border-line-strong bg-white px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:opacity-50"
           >
             <RefreshCw
               size={16}
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         </header>
 
         {error ? (
-          <div className="mb-6 rounded-xl border border-[#f2cccc] bg-[#fff7f7] px-4 py-3 text-sm text-[#ba1a1a]">
+          <div className="mb-6 rounded-xl border border-line-error bg-error-container px-4 py-3 text-sm text-error">
             {error}
           </div>
         ) : null}

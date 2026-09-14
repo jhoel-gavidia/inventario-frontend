@@ -85,18 +85,18 @@ export function MovementModal({
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-[#e5e7ef] bg-[#f8f9ff]">
-        <header className="flex items-start justify-between border-b border-[#eef0f5] px-6 py-5">
+      <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-line bg-background">
+        <header className="flex items-start justify-between border-b border-line-soft px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary-container">
               Movimiento
             </p>
 
-            <h2 className="mt-1 text-base font-semibold text-[#0b1c30]">
+            <h2 className="mt-1 text-base font-semibold text-on-surface">
               Registrar movimiento
             </h2>
 
-            <p className="mt-1 text-xs text-[#737686]">
+            <p className="mt-1 text-xs text-outline">
               Actualiza el stock de forma controlada.
             </p>
           </div>
@@ -106,29 +106,29 @@ export function MovementModal({
             onClick={onClose}
             disabled={isSubmitting}
             aria-label="Cerrar"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb] disabled:opacity-50"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-outline transition hover:bg-surface-container-low hover:text-primary-container disabled:opacity-50"
           >
             <X size={18} />
           </button>
         </header>
 
         <div className="space-y-5 px-6 py-6">
-          <section className="rounded-lg border border-[#eef0f5] bg-[#eff4ff] p-4">
+          <section className="rounded-lg border border-line-soft bg-surface-container-low p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#0b1c30]">
+                <p className="truncate text-sm font-semibold text-on-surface">
                   {currentProduct.nombre}
                 </p>
 
-                <p className="mt-1 font-mono text-xs text-[#737686]">
+                <p className="mt-1 font-mono text-xs text-outline">
                   {currentProduct.codigo}
                 </p>
               </div>
 
               <div className="shrink-0 text-right">
-                <p className="text-xs text-[#737686]">Stock actual</p>
+                <p className="text-xs text-outline">Stock actual</p>
 
-                <p className="mt-1 text-lg font-semibold text-[#0b1c30]">
+                <p className="mt-1 text-lg font-semibold text-on-surface">
                   {currentProduct.stockActual}
                 </p>
               </div>
@@ -136,7 +136,7 @@ export function MovementModal({
           </section>
 
           <section>
-            <label className="mb-2 block text-xs font-medium text-[#0b1c30]">
+            <label className="mb-2 block text-xs font-medium text-on-surface">
               Tipo de movimiento
             </label>
 
@@ -150,8 +150,8 @@ export function MovementModal({
                 disabled={isSubmitting}
                 className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition ${
                   type === "ENTRADA"
-                    ? "border-[#2563eb] bg-[#2563eb] text-white"
-                    : "border-[#dfe2ea] bg-white text-[#434655] hover:bg-[#eff4ff]"
+                    ? "border-primary-container bg-primary-container text-white"
+                    : "border-line-strong bg-white text-ink-muted hover:bg-surface-container-low"
                 }`}
               >
                 <ArrowDownToLine size={16} />
@@ -167,8 +167,8 @@ export function MovementModal({
                 disabled={isSubmitting}
                 className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition ${
                   type === "SALIDA"
-                    ? "border-[#2563eb] bg-[#2563eb] text-white"
-                    : "border-[#dfe2ea] bg-white text-[#434655] hover:bg-[#eff4ff]"
+                    ? "border-primary-container bg-primary-container text-white"
+                    : "border-line-strong bg-white text-ink-muted hover:bg-surface-container-low"
                 }`}
               >
                 <ArrowUpFromLine size={16} />
@@ -178,11 +178,11 @@ export function MovementModal({
           </section>
 
           <section>
-            <label className="mb-2 block text-xs font-medium text-[#0b1c30]">
+            <label className="mb-2 block text-xs font-medium text-on-surface">
               Cantidad
             </label>
 
-            <div className="flex items-center rounded-lg border border-[#dfe2ea] bg-white">
+            <div className="flex items-center rounded-lg border border-line-strong bg-white">
               <button
                 type="button"
                 onClick={() => {
@@ -191,7 +191,7 @@ export function MovementModal({
                 }}
                 disabled={isSubmitting || quantity <= 1}
                 aria-label="Disminuir cantidad"
-                className="flex h-11 w-11 items-center justify-center text-[#737686] transition hover:bg-[#eff4ff] disabled:opacity-40"
+                className="flex h-11 w-11 items-center justify-center text-outline transition hover:bg-surface-container-low disabled:opacity-40"
               >
                 <Minus size={16} />
               </button>
@@ -207,7 +207,7 @@ export function MovementModal({
                 }}
                 disabled={isSubmitting}
                 aria-label="Cantidad"
-                className="h-11 min-w-0 flex-1 border-x border-[#eef0f5] bg-transparent text-center text-sm font-semibold text-[#0b1c30] outline-none"
+                className="h-11 min-w-0 flex-1 border-x border-line-soft bg-transparent text-center text-sm font-semibold text-on-surface outline-none"
               />
 
               <button
@@ -218,14 +218,14 @@ export function MovementModal({
                 }}
                 disabled={isSubmitting}
                 aria-label="Aumentar cantidad"
-                className="flex h-11 w-11 items-center justify-center text-[#737686] transition hover:bg-[#eff4ff]"
+                className="flex h-11 w-11 items-center justify-center text-outline transition hover:bg-surface-container-low"
               >
                 <Plus size={16} />
               </button>
             </div>
 
             {insufficientStock && (
-              <p className="mt-2 text-xs font-medium text-[#ba1a1a]">
+              <p className="mt-2 text-xs font-medium text-error">
                 No puedes retirar {quantity} unidades. El stock
                 disponible es {currentProduct.stockActual}.
               </p>
@@ -235,27 +235,27 @@ export function MovementModal({
           <section
             className={`rounded-lg border p-4 ${
               insufficientStock
-                ? "border-[#f2cccc] bg-[#fff7f7]"
-                : "border-[#eef0f5] bg-[#f8f9ff]"
+                ? "border-line-error bg-error-container"
+                : "border-line-soft bg-background"
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#737686]">
+              <span className="text-xs text-outline">
                 Stock después del movimiento
               </span>
 
               <span
                 className={`text-lg font-semibold ${
                   insufficientStock
-                    ? "text-[#ba1a1a]"
-                    : "text-[#0b1c30]"
+                    ? "text-error"
+                    : "text-on-surface"
                 }`}
               >
                 {projectedStock}
               </span>
             </div>
 
-            <p className="mt-1 text-xs text-[#737686]">
+            <p className="mt-1 text-xs text-outline">
               {isSalida
                 ? `${currentProduct.stockActual} - ${quantity}`
                 : `${currentProduct.stockActual} + ${quantity}`}
@@ -263,7 +263,7 @@ export function MovementModal({
           </section>
 
           {error && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
+            <div className="flex items-start gap-2.5 rounded-lg border border-line-error bg-error-container px-3.5 py-3 text-xs text-error">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
 
               <p>{error}</p>
@@ -271,12 +271,12 @@ export function MovementModal({
           )}
         </div>
 
-        <footer className="flex items-center justify-end gap-3 border-t border-[#eef0f5] px-6 py-4">
+        <footer className="flex items-center justify-end gap-3 border-t border-line-soft px-6 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-10 rounded-lg border border-[#dfe2ea] bg-white px-4 text-sm font-medium text-[#434655] transition hover:bg-[#f8f9ff] disabled:opacity-50"
+            className="h-10 rounded-lg border border-line-strong bg-white px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -285,7 +285,7 @@ export function MovementModal({
             type="button"
             onClick={() => void handleConfirm()}
             disabled={!canSubmit}
-            className="h-10 rounded-lg bg-[#2563eb] px-5 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-10 rounded-lg bg-primary-container px-5 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Registrando..." : "Registrar movimiento"}
           </button>

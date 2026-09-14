@@ -19,10 +19,10 @@ interface ProductDrawerProps {
 }
 
 const inputClassName =
-  "h-11 w-full rounded-lg border bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:ring-2";
+  "h-11 w-full rounded-lg border bg-white px-3 text-sm text-on-surface outline-none transition placeholder:text-ink-faint focus:ring-2";
 
 const inputBorderClassName =
-  "border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10";
+  "border-line-strong focus:border-primary-container focus:ring-primary-container/10";
 
 function getInitialForm(product: Product | null): ProductRequest {
   if (!product) {
@@ -122,10 +122,10 @@ export function ProductDrawer({
         onClick={onClose}
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-[#e5e7ef] bg-[#f8f9ff]">
-        <header className="flex items-center justify-between border-b border-[#eef0f5] px-6 py-5">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-line bg-background">
+        <header className="flex items-center justify-between border-b border-line-soft px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eff4ff] text-[#2563eb]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-primary-container">
               {isEditing ? (
                 <Pencil size={18} />
               ) : (
@@ -134,11 +134,11 @@ export function ProductDrawer({
             </div>
 
             <div>
-              <h2 className="text-base font-semibold text-[#0b1c30]">
+              <h2 className="text-base font-semibold text-on-surface">
                 {isEditing ? "Editar producto" : "Nuevo producto"}
               </h2>
 
-              <p className="mt-0.5 text-xs text-[#737686]">
+              <p className="mt-0.5 text-xs text-outline">
                 {isEditing
                   ? "Actualiza la información del producto"
                   : "Registra un nuevo producto en el inventario"}
@@ -150,7 +150,7 @@ export function ProductDrawer({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-[#737686] transition hover:bg-[#eff4ff] hover:text-[#2563eb]"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-outline transition hover:bg-surface-container-low hover:text-primary-container"
           >
             <X size={18} />
           </button>
@@ -164,11 +164,11 @@ export function ProductDrawer({
             <div className="space-y-6">
               <section>
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-[#0b1c30]">
+                  <h3 className="text-sm font-semibold text-on-surface">
                     Información general
                   </h3>
 
-                  <p className="mt-1 text-xs text-[#737686]">
+                  <p className="mt-1 text-xs text-outline">
                     Datos básicos para identificar el producto.
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export function ProductDrawer({
                   <div>
                     <label
                       htmlFor="product-codigo"
-                      className="mb-1.5 block text-xs font-medium text-[#0b1c30]"
+                      className="mb-1.5 block text-xs font-medium text-on-surface"
                     >
                       Código / SKU
                     </label>
@@ -199,15 +199,15 @@ export function ProductDrawer({
                       }
                       className={`${inputClassName} ${
                         fieldError
-                          ? "border-[#d38a8a] focus:border-[#ba1a1a] focus:ring-[#ba1a1a]/10"
-                          : "border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10"
+                          ? "border-line-error-strong focus:border-error focus:ring-error/10"
+                          : "border-line-strong focus:border-primary-container focus:ring-primary-container/10"
                       }`}
                     />
 
                     {fieldError && (
                       <p
                         id="product-codigo-error"
-                        className="mt-1.5 flex items-start gap-1 text-xs text-[#ba1a1a]"
+                        className="mt-1.5 flex items-start gap-1 text-xs text-error"
                       >
                         <AlertCircle
                           size={14}
@@ -219,7 +219,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
                       Nombre
                     </label>
 
@@ -235,7 +235,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
                       Categoría
                     </label>
 
@@ -272,7 +272,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
                       Estado
                     </label>
 
@@ -293,20 +293,20 @@ export function ProductDrawer({
                 </div>
               </section>
 
-              <section className="border-t border-[#eef0f5] pt-6">
+              <section className="border-t border-line-soft pt-6">
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-[#0b1c30]">
+                  <h3 className="text-sm font-semibold text-on-surface">
                     Información económica
                   </h3>
 
-                  <p className="mt-1 text-xs text-[#737686]">
+                  <p className="mt-1 text-xs text-outline">
                     Define los precios de compra y venta.
                   </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
                       Precio de compra
                     </label>
 
@@ -327,7 +327,7 @@ export function ProductDrawer({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
+                    <label className="mb-1.5 block text-xs font-medium text-on-surface">
                       Precio de venta
                     </label>
 
@@ -351,20 +351,20 @@ export function ProductDrawer({
                 <div
                   className={`mt-4 rounded-lg border p-3 ${
                     hasNegativeMargin
-                      ? "border-[#f2cccc] bg-[#fff7f7]"
-                      : "border-[#eef0f5] bg-[#f8f9ff]"
+                      ? "border-line-error bg-error-container"
+                      : "border-line-soft bg-background"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#737686]">
+                    <span className="text-xs text-outline">
                       Margen por unidad
                     </span>
 
                     <span
                       className={`text-sm font-semibold ${
                         hasNegativeMargin
-                          ? "text-[#ba1a1a]"
-                          : "text-[#2563eb]"
+                          ? "text-error"
+                          : "text-primary-container"
                       }`}
                     >
                       S/ {margin.toFixed(2)}
@@ -374,8 +374,8 @@ export function ProductDrawer({
                   <p
                     className={`mt-1 text-xs ${
                       hasNegativeMargin
-                        ? "text-[#ba1a1a]"
-                        : "text-[#737686]"
+                        ? "text-error"
+                        : "text-outline"
                     }`}
                   >
                     {hasNegativeMargin
@@ -392,13 +392,13 @@ export function ProductDrawer({
               </section>
 
               {!isEditing && (
-                <section className="border-t border-[#eef0f5] pt-6">
+                <section className="border-t border-line-soft pt-6">
                   <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-[#0b1c30]">
+                    <h3 className="text-sm font-semibold text-on-surface">
                       Stock inicial
                     </h3>
 
-                    <p className="mt-1 text-xs text-[#737686]">
+                    <p className="mt-1 text-xs text-outline">
                       Cantidad disponible al registrar el producto.
                     </p>
                   </div>
@@ -422,7 +422,7 @@ export function ProductDrawer({
             </div>
 
             {serverError && (
-              <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
+              <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-line-error bg-error-container px-3.5 py-3 text-xs text-error">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
 
                 <p>{serverError}</p>
@@ -430,12 +430,12 @@ export function ProductDrawer({
             )}
           </div>
 
-          <footer className="flex items-center justify-end gap-3 border-t border-[#eef0f5] bg-[#f8f9ff] px-6 py-4">
+          <footer className="flex items-center justify-end gap-3 border-t border-line-soft bg-background px-6 py-4">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="h-10 rounded-lg border border-[#dfe2ea] bg-white px-4 text-sm font-medium text-[#434655] transition hover:bg-[#f8f9ff] disabled:opacity-50"
+              className="h-10 rounded-lg border border-line-strong bg-white px-4 text-sm font-medium text-ink-muted transition hover:bg-background disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -443,7 +443,7 @@ export function ProductDrawer({
             <button
               type="submit"
               disabled={isSaving}
-              className="h-10 rounded-lg bg-[#2563eb] px-5 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-10 rounded-lg bg-primary-container px-5 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSaving
                 ? "Guardando..."

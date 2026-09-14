@@ -99,7 +99,7 @@ export default function UsuariosPage() {
   }
 
   return (
-    <main className="min-h-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] sm:px-6 lg:px-8">
+    <main className="min-h-full bg-background px-4 py-6 text-on-surface sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px]">
 
         {/* Header */}
@@ -109,7 +109,7 @@ export default function UsuariosPage() {
               Usuarios
             </h1>
 
-            <p className="mt-1 text-sm text-[#737686]">
+            <p className="mt-1 text-sm text-outline">
               Cuentas y accesos al sistema.
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function UsuariosPage() {
           <button
             type="button"
             onClick={handleNewUser}
-            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-[#2563eb] px-4 text-sm font-medium text-white transition hover:bg-[#1d4ed8]"
+            className="flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-primary-container px-4 text-sm font-medium text-white transition hover:bg-accent-hover"
           >
             <Plus size={17} />
             Nuevo usuario
@@ -149,7 +149,7 @@ export default function UsuariosPage() {
       {/* Modal crear / editar usuario */}
       {isFormOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/40 p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               handleCancel();
