@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import {
-  checkSession,
+  getCurrentUser,
   login,
 } from "@/features/auth/services/auth-service";
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
   useEffect(() => {
     async function validateExistingSession() {
       try {
-        await checkSession();
+        await getCurrentUser();
         router.replace("/dashboard");
       } catch {
         setCheckingSession(false);

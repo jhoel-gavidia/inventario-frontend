@@ -51,9 +51,17 @@ const menuItems = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isAdmin: boolean;
+}
+
+export function Sidebar({ isAdmin }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  const visibleItems = menuItems.filter(
+    (item) => !item.admin || isAdmin,
+  );
 
   async function handleLogout() {
     try {
@@ -83,7 +91,7 @@ export function Sidebar() {
           </p>
 
           <nav className="flex flex-col gap-1">
-            {menuItems.map((item) => {
+            {visibleItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
 
