@@ -88,6 +88,7 @@ export function ProductFilters({
               onSearchChange(event.target.value)
             }
             placeholder="Buscar por nombre o código..."
+            aria-label="Buscar por nombre o código"
             className="h-10 w-full rounded-lg border border-[#dfe2ea] bg-white pl-9 pr-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#737686] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10"
           />
         </div>
@@ -97,6 +98,7 @@ export function ProductFilters({
           onChange={(event) =>
             onCategoryChange(event.target.value)
           }
+          aria-label="Filtrar por categoría"
           className={inputClassName}
         >
           <option value="ALL">Todas las categorías</option>
@@ -113,6 +115,7 @@ export function ProductFilters({
           onChange={(event) =>
             onStockStatusChange(event.target.value)
           }
+          aria-label="Filtrar por stock"
           className={inputClassName}
         >
           <option value="ALL">Todo el stock</option>
@@ -125,6 +128,7 @@ export function ProductFilters({
           onChange={(event) =>
             onStatusChange(event.target.value)
           }
+          aria-label="Filtrar por estado"
           className={inputClassName}
         >
           <option value="ALL">Todos los estados</option>

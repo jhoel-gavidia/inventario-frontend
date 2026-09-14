@@ -10,16 +10,6 @@ export async function getProducts(): Promise<Product[]> {
   return data;
 }
 
-export async function getProductById(
-  id: number
-): Promise<Product> {
-  const { data } = await api.get<Product>(
-    `/productos/${id}`
-  );
-
-  return data;
-}
-
 export async function createProduct(
   request: ProductRequest
 ): Promise<Product> {

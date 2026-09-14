@@ -1,35 +1,35 @@
 "use client";
 
-import { ArrowDownToLine, ArrowUpFromLine, Minus, Plus, X } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Minus,
+  Plus,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 
+import { getApiErrorMessage } from "@/lib/api/errors";
+import { useCreateMovement } from "@/features/movements/hooks/use-create-movement";
 import type { MovementType } from "@/features/movements/types/movement";
 import type { Product } from "@/features/products/types/product";
 
 interface MovementModalProps {
-  open: boolean;
-  product: Product | null;
+  product: Product;
   onClose: () => void;
-  onConfirm: (
-    product: Product,
-    type: MovementType,
-    quantity: number,
-  ) => Promise<void>;
 }
 
 export function MovementModal({
-  open,
   product,
   onClose,
-  onConfirm,
 }: MovementModalProps) {
+  const { createMovement, isPending } = useCreateMovement();
+  const isSubmitting = isPending;
+
   const [type, setType] = useState<MovementType>("ENTRADA");
-
   const [quantity, setQuantity] = useState(1);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!open || !product) return null;
+  const [error, setError] = useState<string | null>(null);
 
   const currentProduct = product;
 
@@ -39,23 +39,42 @@ export function MovementModal({
     ? currentProduct.stockActual - quantity
     : currentProduct.stockActual + quantity;
 
-  const insufficientStock = isSalida && quantity > currentProduct.stockActual;
+  const insufficientStock =
+    isSalida && quantity > currentProduct.stockActual;
 
   const invalidQuantity = quantity < 1;
 
-  const canSubmit = !isSubmitting && !invalidQuantity && !insufficientStock;
+  const canSubmit =
+    !isSubmitting && !invalidQuantity && !insufficientStock;
+
+  function clearError() {
+    setError(null);
+  }
 
   async function handleConfirm() {
     if (!canSubmit) return;
 
     try {
-      setIsSubmitting(true);
+      setError(null);
 
-      await onConfirm(currentProduct, type, quantity);
+      await createMovement({
+        tipo: type,
+        detalles: [
+          {
+            productoId: currentProduct.id,
+            cantidad: quantity,
+          },
+        ],
+      });
 
       onClose();
-    } finally {
-      setIsSubmitting(false);
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(
+          requestError,
+          "No se pudo registrar el movimiento. Inténtalo nuevamente.",
+        ),
+      );
     }
   }
 
@@ -124,7 +143,10 @@ export function MovementModal({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setType("ENTRADA")}
+                onClick={() => {
+                  setType("ENTRADA");
+                  clearError();
+                }}
                 disabled={isSubmitting}
                 className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition ${
                   type === "ENTRADA"
@@ -138,7 +160,10 @@ export function MovementModal({
 
               <button
                 type="button"
-                onClick={() => setType("SALIDA")}
+                onClick={() => {
+                  setType("SALIDA");
+                  clearError();
+                }}
                 disabled={isSubmitting}
                 className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition ${
                   type === "SALIDA"
@@ -160,8 +185,12 @@ export function MovementModal({
             <div className="flex items-center rounded-lg border border-[#dfe2ea] bg-white">
               <button
                 type="button"
-                onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                onClick={() => {
+                  setQuantity((value) => Math.max(1, value - 1));
+                  clearError();
+                }}
                 disabled={isSubmitting || quantity <= 1}
+                aria-label="Disminuir cantidad"
                 className="flex h-11 w-11 items-center justify-center text-[#737686] transition hover:bg-[#eff4ff] disabled:opacity-40"
               >
                 <Minus size={16} />
@@ -172,15 +201,23 @@ export function MovementModal({
                 min="1"
                 step="1"
                 value={quantity}
-                onChange={(event) => setQuantity(Number(event.target.value))}
+                onChange={(event) => {
+                  setQuantity(Number(event.target.value));
+                  clearError();
+                }}
                 disabled={isSubmitting}
+                aria-label="Cantidad"
                 className="h-11 min-w-0 flex-1 border-x border-[#eef0f5] bg-transparent text-center text-sm font-semibold text-[#0b1c30] outline-none"
               />
 
               <button
                 type="button"
-                onClick={() => setQuantity((value) => value + 1)}
+                onClick={() => {
+                  setQuantity((value) => value + 1);
+                  clearError();
+                }}
                 disabled={isSubmitting}
+                aria-label="Aumentar cantidad"
                 className="flex h-11 w-11 items-center justify-center text-[#737686] transition hover:bg-[#eff4ff]"
               >
                 <Plus size={16} />
@@ -189,8 +226,8 @@ export function MovementModal({
 
             {insufficientStock && (
               <p className="mt-2 text-xs font-medium text-[#ba1a1a]">
-                No puedes retirar {quantity} unidades. El stock disponible es{" "}
-                {currentProduct.stockActual}.
+                No puedes retirar {quantity} unidades. El stock
+                disponible es {currentProduct.stockActual}.
               </p>
             )}
           </section>
@@ -209,7 +246,9 @@ export function MovementModal({
 
               <span
                 className={`text-lg font-semibold ${
-                  insufficientStock ? "text-[#ba1a1a]" : "text-[#0b1c30]"
+                  insufficientStock
+                    ? "text-[#ba1a1a]"
+                    : "text-[#0b1c30]"
                 }`}
               >
                 {projectedStock}
@@ -222,6 +261,14 @@ export function MovementModal({
                 : `${currentProduct.stockActual} + ${quantity}`}
             </p>
           </section>
+
+          {error && (
+            <div className="flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+
+              <p>{error}</p>
+            </div>
+          )}
         </div>
 
         <footer className="flex items-center justify-end gap-3 border-t border-[#eef0f5] px-6 py-4">
@@ -236,7 +283,7 @@ export function MovementModal({
 
           <button
             type="button"
-            onClick={handleConfirm}
+            onClick={() => void handleConfirm()}
             disabled={!canSubmit}
             className="h-10 rounded-lg bg-[#2563eb] px-5 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
           >

@@ -7,18 +7,19 @@ import { ProductDrawer } from "@/features/products/components/ProductDrawer";
 import { ProductFilters } from "@/features/products/components/ProductFilters";
 import { ProductStats } from "@/features/products/components/ProductStats";
 import { ProductTable } from "@/features/products/components/ProductTable";
-import {
-  createProduct,
-  updateProduct,
-} from "@/features/products/services/product-service";
 import { useProducts } from "@/features/products/hooks/use-products";
+import { useSaveProduct } from "@/features/products/hooks/use-save-product";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 
 import { MovementModal } from "@/features/products/components/MovementModal";
-import type { MovementType } from "@/features/movements/types/movement";
 import type { Product, ProductRequest } from "@/features/products/types/product";
 
 const PAGE_SIZE = 10;
+
+const currencyFormatter = new Intl.NumberFormat("es-PE", {
+  style: "currency",
+  currency: "PEN",
+});
 
 export default function ProductosPage() {
   const {
@@ -27,6 +28,7 @@ export default function ProductosPage() {
     error: productsError,
     refreshProducts,
   } = useProducts();
+  const { saveProduct } = useSaveProduct();
   const {
     categories,
     isLoading: isLoadingCategories,
@@ -123,20 +125,16 @@ export default function ProductosPage() {
 
   const categoryDistribution = useMemo(() => {
     const stockByCategory = new Map<number, number>();
+    let totalStock = 0;
 
     for (const product of products) {
-      const categoryId = product.categoriaId;
-
+      totalStock += product.stockActual;
       stockByCategory.set(
-        categoryId,
-        (stockByCategory.get(categoryId) ?? 0) + product.stockActual,
+        product.categoriaId,
+        (stockByCategory.get(product.categoriaId) ?? 0) +
+          product.stockActual,
       );
     }
-
-    const totalStock = products.reduce(
-      (total, product) => total + product.stockActual,
-      0,
-    );
 
     return categories.map((category) => {
       const stock = stockByCategory.get(category.id) ?? 0;
@@ -145,7 +143,10 @@ export default function ProductosPage() {
         id: category.id,
         nombre: category.nombre,
         stock,
-        percentage: totalStock > 0 ? Math.round((stock / totalStock) * 100) : 0,
+        percentage:
+          totalStock > 0
+            ? Math.round((stock / totalStock) * 100)
+            : 0,
       };
     });
   }, [products, categories]);
@@ -166,29 +167,8 @@ export default function ProductosPage() {
   }
 
   async function handleSaveProduct(data: ProductRequest) {
-    if (selectedProduct) {
-      await updateProduct(selectedProduct.id, data);
-    } else {
-      await createProduct(data);
-    }
-
-    await refreshProducts();
+    await saveProduct({ product: selectedProduct, data });
     setDrawerOpen(false);
-  }
-
-  async function handleMovementConfirm(
-    product: Product,
-    type: MovementType,
-    quantity: number,
-  ) {
-    // TODO: conectar con POST /api/movimientos
-    console.log({
-      productoId: product.id,
-      tipo: type,
-      cantidad: quantity,
-    });
-
-    await refreshProducts();
   }
 
   function handleClearFilters() {
@@ -341,10 +321,7 @@ export default function ProductosPage() {
                 <span className="text-sm text-[#737686]">Valor de compra</span>
 
                 <span className="text-sm font-semibold text-[#0b1c30]">
-                  {new Intl.NumberFormat("es-PE", {
-                    style: "currency",
-                    currency: "PEN",
-                  }).format(totalInventoryValue)}
+                  {currencyFormatter.format(totalInventoryValue)}
                 </span>
               </div>
 
@@ -354,10 +331,7 @@ export default function ProductosPage() {
                 </span>
 
                 <span className="text-sm font-semibold text-[#0b1c30]">
-                  {new Intl.NumberFormat("es-PE", {
-                    style: "currency",
-                    currency: "PEN",
-                  }).format(projectedSalesValue)}
+                  {currencyFormatter.format(projectedSalesValue)}
                 </span>
               </div>
 
@@ -368,10 +342,9 @@ export default function ProductosPage() {
                   </span>
 
                   <span className="text-sm font-semibold text-[#2563eb]">
-                    {new Intl.NumberFormat("es-PE", {
-                      style: "currency",
-                      currency: "PEN",
-                    }).format(projectedSalesValue - totalInventoryValue)}
+                    {currencyFormatter.format(
+                      projectedSalesValue - totalInventoryValue,
+                    )}
                   </span>
                 </div>
               </div>
@@ -391,21 +364,21 @@ export default function ProductosPage() {
         </section>
       </div>
 
-      <ProductDrawer
-        key={selectedProduct?.id ?? "new"}
-        open={drawerOpen}
-        product={selectedProduct}
-        categories={categories}
-        onClose={() => setDrawerOpen(false)}
-        onSave={handleSaveProduct}
-      />
+      {drawerOpen && (
+        <ProductDrawer
+          product={selectedProduct}
+          categories={categories}
+          onClose={() => setDrawerOpen(false)}
+          onSave={handleSaveProduct}
+        />
+      )}
 
-      <MovementModal
-        open={movementOpen}
-        product={movementProduct}
-        onClose={() => setMovementOpen(false)}
-        onConfirm={handleMovementConfirm}
-      />
+      {movementOpen && movementProduct && (
+        <MovementModal
+          product={movementProduct}
+          onClose={() => setMovementOpen(false)}
+        />
+      )}
     </main>
   );
 }

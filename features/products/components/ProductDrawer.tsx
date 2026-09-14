@@ -3,7 +3,7 @@
 import { AlertCircle, PackagePlus, Pencil, X } from "lucide-react";
 import { useState } from "react";
 
-import { getApiErrorMessage } from "@/lib/api/errors";
+import { getApiErrorMessage, isServerValidationError } from "@/lib/api/errors";
 import type {
   Product,
   ProductRequest,
@@ -12,7 +12,6 @@ import type {
 import type { Category } from "../../categories/types/category";
 
 interface ProductDrawerProps {
-  open: boolean;
   product: Product | null;
   categories: Category[];
   onClose: () => void;
@@ -20,7 +19,10 @@ interface ProductDrawerProps {
 }
 
 const inputClassName =
-  "h-11 w-full rounded-lg border border-[#dfe2ea] bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10";
+  "h-11 w-full rounded-lg border bg-white px-3 text-sm text-[#0b1c30] outline-none transition placeholder:text-[#9a9dab] focus:ring-2";
+
+const inputBorderClassName =
+  "border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10";
 
 function getInitialForm(product: Product | null): ProductRequest {
   if (!product) {
@@ -47,7 +49,6 @@ function getInitialForm(product: Product | null): ProductRequest {
 }
 
 export function ProductDrawer({
-  open,
   product,
   categories,
   onClose,
@@ -60,9 +61,8 @@ export function ProductDrawer({
   );
 
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (!open) return null;
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const margin = form.precioVenta - form.precioCompra;
 
@@ -82,7 +82,8 @@ export function ProductDrawer({
       [field]: value,
     }));
 
-    setError(null);
+    setFieldError(null);
+    setServerError(null);
   }
 
   async function handleSubmit(
@@ -92,15 +93,23 @@ export function ProductDrawer({
 
     try {
       setIsSaving(true);
-      setError(null);
+      setFieldError(null);
+      setServerError(null);
       await onSave(form);
     } catch (requestError) {
-      setError(
-        getApiErrorMessage(
-          requestError,
-          "No se pudo guardar el producto. Inténtalo nuevamente.",
-        ),
+      const message = getApiErrorMessage(
+        requestError,
+        "No se pudo guardar el producto. Inténtalo nuevamente.",
       );
+
+      if (
+        isServerValidationError(requestError) &&
+        /c[óo]digo|sku/i.test(message)
+      ) {
+        setFieldError(message);
+      } else {
+        setServerError(message);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -166,11 +175,15 @@ export function ProductDrawer({
 
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[#0b1c30]">
+                    <label
+                      htmlFor="product-codigo"
+                      className="mb-1.5 block text-xs font-medium text-[#0b1c30]"
+                    >
                       Código / SKU
                     </label>
 
                     <input
+                      id="product-codigo"
                       autoFocus
                       required
                       value={form.codigo}
@@ -178,8 +191,31 @@ export function ProductDrawer({
                         updateField("codigo", event.target.value)
                       }
                       placeholder="Ej. MOT-001"
-                      className={inputClassName}
+                      aria-invalid={fieldError !== null}
+                      aria-describedby={
+                        fieldError
+                          ? "product-codigo-error"
+                          : undefined
+                      }
+                      className={`${inputClassName} ${
+                        fieldError
+                          ? "border-[#d38a8a] focus:border-[#ba1a1a] focus:ring-[#ba1a1a]/10"
+                          : "border-[#dfe2ea] focus:border-[#2563eb] focus:ring-[#2563eb]/10"
+                      }`}
                     />
+
+                    {fieldError && (
+                      <p
+                        id="product-codigo-error"
+                        className="mt-1.5 flex items-start gap-1 text-xs text-[#ba1a1a]"
+                      >
+                        <AlertCircle
+                          size={14}
+                          className="mt-0.5 shrink-0"
+                        />
+                        {fieldError}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -194,7 +230,7 @@ export function ProductDrawer({
                         updateField("nombre", event.target.value)
                       }
                       placeholder="Ej. Pastillas de freno"
-                      className={inputClassName}
+                      className={`${inputClassName} ${inputBorderClassName}`}
                     />
                   </div>
 
@@ -218,7 +254,7 @@ export function ProductDrawer({
                             : 0
                         )
                       }
-                      className={inputClassName}
+                      className={`${inputClassName} ${inputBorderClassName}`}
                     >
                       <option value="" disabled>
                         Selecciona una categoría
@@ -248,7 +284,7 @@ export function ProductDrawer({
                           event.target.value === "true"
                         )
                       }
-                      className={inputClassName}
+                      className={`${inputClassName} ${inputBorderClassName}`}
                     >
                       <option value="true">Activo</option>
                       <option value="false">Inactivo</option>
@@ -286,7 +322,7 @@ export function ProductDrawer({
                           Number(event.target.value)
                         )
                       }
-                      className={inputClassName}
+                      className={`${inputClassName} ${inputBorderClassName}`}
                     />
                   </div>
 
@@ -307,7 +343,7 @@ export function ProductDrawer({
                           Number(event.target.value)
                         )
                       }
-                      className={inputClassName}
+                      className={`${inputClassName} ${inputBorderClassName}`}
                     />
                   </div>
                 </div>
@@ -379,17 +415,17 @@ export function ProductDrawer({
                         Number(event.target.value)
                       )
                     }
-                    className={inputClassName}
+                    className={`${inputClassName} ${inputBorderClassName}`}
                   />
                 </section>
               )}
             </div>
 
-            {error && (
+            {serverError && (
               <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-[#f2cccc] bg-[#fff7f7] px-3.5 py-3 text-xs text-[#ba1a1a]">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
 
-                <p>{error}</p>
+                <p>{serverError}</p>
               </div>
             )}
           </div>
