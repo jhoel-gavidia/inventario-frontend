@@ -18,10 +18,7 @@ import { resetSessionCache } from "@/features/auth/session-cache";
 export default function LoginPage() {
   const router = useRouter();
 
-  const {
-    isChecking: checkingSession,
-    user: existingUser,
-  } = useSession();
+  const { user: existingUser } = useSession();
 
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -58,18 +55,7 @@ export default function LoginPage() {
     }
   }
 
-  if (checkingSession) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex items-center gap-2 text-sm text-secondary">
-          <LoaderCircle size={18} className="animate-spin" />
-          Verificando sesión...
-        </div>
-      </main>
-    );
-  }
-
-  return (
+return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-8">
       <div className="pointer-events-none absolute -left-32 -top-32 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
 
