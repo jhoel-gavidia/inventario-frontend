@@ -228,7 +228,7 @@ function MovimientosPageContent() {
           />
         </section>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-12">
           <section className="min-w-0 rounded-xl border border-line bg-white xl:col-span-7">
             <div className="border-b border-line-soft px-5 py-5">
               <div className="flex flex-col gap-4">
