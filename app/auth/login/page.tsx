@@ -11,34 +11,30 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import {
-  getCurrentUser,
-  login,
-} from "@/features/auth/services/auth-service";
+import { login } from "@/features/auth/services/auth-service";
+import { useSession } from "@/features/auth/hooks/use-session";
+import { resetSessionCache } from "@/features/auth/session-cache";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  const {
+    isChecking: checkingSession,
+    user: existingUser,
+  } = useSession();
 
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function validateExistingSession() {
-      try {
-        await getCurrentUser();
-        router.replace("/dashboard");
-      } catch {
-        setCheckingSession(false);
-      }
+    if (existingUser) {
+      router.replace("/dashboard");
     }
-
-    validateExistingSession();
-  }, [router]);
+  }, [existingUser, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,6 +47,8 @@ export default function LoginPage() {
         username,
         password,
       });
+
+      resetSessionCache();
 
       router.replace("/dashboard");
     } catch {

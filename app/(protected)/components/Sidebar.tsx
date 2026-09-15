@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { logout } from "@/features/auth/services/auth-service";
+import { resetSessionCache } from "@/features/auth/session-cache";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -58,18 +60,23 @@ interface SidebarProps {
 export function Sidebar({ isAdmin }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   const visibleItems = menuItems.filter(
     (item) => !item.admin || isAdmin,
   );
 
   async function handleLogout() {
+    resetSessionCache();
+    queryClient.clear();
+
     try {
       await logout();
-      router.replace("/auth/login");
     } catch {
-      router.replace("/auth/login");
+      // La sesión pudo haber expirado en el servidor.
     }
+
+    router.replace("/auth/login");
   }
 
   return (

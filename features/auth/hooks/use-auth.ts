@@ -1,31 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { getCurrentUser } from "../services/auth-service";
-import type { SessionUser } from "../types/auth";
+import { useSession } from "./use-session";
 
 export function useAuth() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const { isChecking, user } = useSession();
 
   useEffect(() => {
-    async function validateSession() {
-      try {
-        const currentUser = await getCurrentUser();
-
-        setUser(currentUser);
-      } catch {
-        router.replace("/auth/login");
-      } finally {
-        setIsChecking(false);
-      }
+    if (!isChecking && !user) {
+      router.replace("/auth/login");
     }
-
-    validateSession();
-  }, [router]);
+  }, [isChecking, user, router]);
 
   return {
     isChecking,
