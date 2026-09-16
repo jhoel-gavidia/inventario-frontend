@@ -48,7 +48,23 @@ export default function LoginPage() {
       resetSessionCache();
 
       router.replace("/dashboard");
-    } catch {
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error
+      ) {
+        const response = (error as { response?: { status?: number } })
+          .response;
+
+        if (response?.status === 429) {
+          setError(
+            "Demasiados intentos. Espera unos minutos y vuelve a intentarlo."
+          );
+          return;
+        }
+      }
+
       setError("Usuario o contraseña incorrectos.");
     } finally {
       setLoading(false);
