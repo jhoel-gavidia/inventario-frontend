@@ -1,8 +1,6 @@
-import { api } from "@/lib/api/axios";
+import { getAllPages } from "@/lib/api/paginated";
 import type { Audit } from "../types/audit";
 
 export async function getAudits(): Promise<Audit[]> {
-  const { data } = await api.get<Audit[]>("/auditorias");
-
-  return data;
+  return getAllPages<Audit>("/auditorias");
 }
