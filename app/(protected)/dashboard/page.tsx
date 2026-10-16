@@ -61,23 +61,21 @@ export default function DashboardPage() {
           isLoading={isLoading}
         />
 
-        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <div className="space-y-6 xl:col-span-7">
+        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-12">
+          <div className="[&>section]:h-full xl:col-span-7">
             <InventoryStatus stats={stats} />
-
-            <CategoryDistribution
-              categories={stats.categoryStats}
-            />
           </div>
 
-          <div className="space-y-6 xl:col-span-5">
-            <AttentionPanel
-              products={stats.attentionProducts}
-            />
+          <div className="[&>section]:h-full xl:col-span-5">
+            <AttentionPanel products={stats.attentionProducts} />
+          </div>
 
-            <RecentActivity
-              movements={stats.recentMovements}
-            />
+          <div className="[&>section]:h-full xl:col-span-7">
+            <CategoryDistribution categories={stats.categoryStats} />
+          </div>
+
+          <div className="[&>section]:h-full xl:col-span-5">
+            <RecentActivity movements={stats.recentMovements} />
           </div>
         </div>
 

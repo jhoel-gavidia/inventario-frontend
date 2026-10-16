@@ -1,5 +1,10 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import {
   ArrowDownToLine,
+  ArrowLeft,
+  ArrowRight,
   ArrowUpFromLine,
 } from "lucide-react";
 
@@ -8,6 +13,8 @@ import type { Movement } from "@/features/movements/types/movement";
 interface RecentActivityProps {
   movements: Movement[];
 }
+
+const PAGE_SIZE = 5;
 
 function formatRelativeDate(date: string) {
   const value = new Date(date);
@@ -46,6 +53,21 @@ function formatRelativeDate(date: string) {
 export function RecentActivity({
   movements,
 }: RecentActivityProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(movements.length / PAGE_SIZE),
+  );
+
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedMovements = useMemo(() => {
+    const start = (safeCurrentPage - 1) * PAGE_SIZE;
+
+    return movements.slice(start, start + PAGE_SIZE);
+  }, [movements, safeCurrentPage]);
+
   return (
     <section className="rounded-xl border border-line bg-white p-5">
       <div>
@@ -63,52 +85,90 @@ export function RecentActivity({
           No hay movimientos registrados.
         </div>
       ) : (
-        <div className="mt-5 divide-y divide-line-soft">
-          {movements.map((movement) => {
-            const isEntry = movement.tipo === "ENTRADA";
+        <>
+          <div className="mt-5 divide-y divide-line-soft">
+            {paginatedMovements.map((movement) => {
+              const isEntry = movement.tipo === "ENTRADA";
 
-            const totalUnits = movement.detalles.reduce(
-              (total, detail) => total + detail.cantidad,
-              0,
-            );
+              const totalUnits = movement.detalles.reduce(
+                (total, detail) => total + detail.cantidad,
+                0,
+              );
 
-            const Icon = isEntry
-              ? ArrowDownToLine
-              : ArrowUpFromLine;
+              const Icon = isEntry
+                ? ArrowDownToLine
+                : ArrowUpFromLine;
 
-            return (
-              <div
-                key={movement.id}
-                className="flex items-center gap-3 py-3"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-soft">
-                  <Icon className="h-4 w-4 text-ink-muted" />
+              return (
+                <div
+                  key={movement.id}
+                  className="flex items-center gap-3 py-3"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-soft">
+                    <Icon className="h-4 w-4 text-ink-muted" />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-on-surface">
+                      {isEntry
+                        ? "Entrada de productos"
+                        : "Salida de productos"}
+                    </p>
+
+                    <p className="mt-0.5 text-xs text-ink-faint">
+                      {movement.detalles.length}{" "}
+                      {movement.detalles.length === 1
+                        ? "producto"
+                        : "productos"}
+                      {" · "}
+                      {totalUnits} unidades
+                    </p>
+                  </div>
+
+                  <span className="shrink-0 text-xs text-ink-faint">
+                    {formatRelativeDate(movement.fecha)}
+                  </span>
                 </div>
+              );
+            })}
+          </div>
 
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-on-surface">
-                    {isEntry
-                      ? "Entrada de productos"
-                      : "Salida de productos"}
-                  </p>
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between border-t border-line-soft pt-3">
+              <span className="text-xs text-outline">
+                Página {safeCurrentPage} de {totalPages}
+              </span>
 
-                  <p className="mt-0.5 text-xs text-ink-faint">
-                    {movement.detalles.length}{" "}
-                    {movement.detalles.length === 1
-                      ? "producto"
-                      : "productos"}
-                    {" · "}
-                    {totalUnits} unidades
-                  </p>
-                </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={safeCurrentPage <= 1}
+                  aria-label="Página anterior"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ArrowLeft size={15} />
+                </button>
 
-                <span className="shrink-0 text-xs text-ink-faint">
-                  {formatRelativeDate(movement.fecha)}
-                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) =>
+                      Math.min(totalPages, page + 1),
+                    )
+                  }
+                  disabled={safeCurrentPage >= totalPages}
+                  aria-label="Página siguiente"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ArrowRight size={15} />
+                </button>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
