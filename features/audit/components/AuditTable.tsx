@@ -1,4 +1,4 @@
-import { Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye } from "lucide-react";
 
 import type { Audit } from "../types/audit";
 
@@ -6,6 +6,12 @@ interface AuditTableProps {
   audits: Audit[];
   selectedAudit: Audit | null;
   onSelect: (audit: Audit) => void;
+
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
 }
 
 function getActionClass(action: string) {
@@ -41,9 +47,14 @@ export function AuditTable({
   audits,
   selectedAudit,
   onSelect,
+  totalItems,
+  currentPage,
+  totalPages,
+  pageSize,
+  onPageChange,
 }: AuditTableProps) {
   return (
-    <section className="overflow-hidden rounded-xl border border-line bg-white">
+    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white">
       <div className="flex items-center justify-between border-b border-line-strong bg-surface-hover px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -51,13 +62,13 @@ export function AuditTable({
           </span>
 
           <span className="rounded-full bg-primary-container/10 px-2 py-0.5 text-[11px] font-bold text-secondary">
-            {audits.length}
+            {totalItems}
           </span>
         </div>
       </div>
 
       {audits.length === 0 ? (
-        <div className="flex min-h-60 items-center justify-center p-6 text-center">
+        <div className="flex min-h-60 flex-1 items-center justify-center p-6 text-center">
           <div>
             <p className="text-sm font-semibold text-ink-muted">
               No se encontraron registros
@@ -69,7 +80,7 @@ export function AuditTable({
           </div>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="flex-1 overflow-x-auto">
           <table className="w-full text-left">
             <thead className="border-b border-line-strong bg-surface-tint text-[10px] font-bold uppercase tracking-wider text-ink-faint">
               <tr>
@@ -166,6 +177,42 @@ export function AuditTable({
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {totalItems > 0 && (
+        <div className="flex items-center justify-between border-t border-line-soft px-4 py-3">
+          <p className="text-xs text-outline">
+            {(currentPage - 1) * pageSize + 1}-
+            {Math.min(currentPage * pageSize, totalItems)} de{" "}
+            {totalItems} registros
+          </p>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+              aria-label="Página anterior"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ArrowLeft size={15} />
+            </button>
+
+            <span className="px-2 text-xs font-medium text-ink-muted">
+              {currentPage} / {totalPages}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              aria-label="Página siguiente"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-muted transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ArrowRight size={15} />
+            </button>
+          </div>
         </div>
       )}
     </section>

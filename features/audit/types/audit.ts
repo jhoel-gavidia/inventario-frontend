@@ -18,3 +18,11 @@ export interface AuditFilters {
   accion: string;
   fecha: string;
 }
+
+export interface AuditResumen {
+  total: number;
+  accionesCriticas: number;
+  usuariosAuditados: number;
+  entidadMasModificada: string | null;
+  entidadMasModificadaTotal: number;
+}

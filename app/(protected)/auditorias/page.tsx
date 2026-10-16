@@ -1,13 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AuditFilters } from "@/features/audit/components/AuditFilters";
 import { AuditHeader } from "@/features/audit/components/AuditHeader";
 import { AuditInspector } from "@/features/audit/components/AuditInspector";
 import { AuditStats } from "@/features/audit/components/AuditStats";
 import { AuditTable } from "@/features/audit/components/AuditTable";
-import { useAudits } from "@/features/audit/hooks/use-audits";
+import {
+  useAuditResumen,
+  useAuditsPagina,
+  useRefreshAudits,
+} from "@/features/audit/hooks/use-audits";
+import {
+  getAllAuditsFiltered,
+} from "@/features/audit/services/audit-service";
 import { downloadAuditsCSV } from "@/features/audit/utils/audit-export";
 
 import type { Audit, AuditFilters as Filters } from "@/features/audit/types/audit";
@@ -19,92 +26,78 @@ const INITIAL_FILTERS: Filters = {
   fecha: "all",
 };
 
+const PAGE_SIZE = 10;
+
 export default function AuditoriaPage() {
+  const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedAudit, setSelectedAudit] = useState<Audit | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const refreshAudits = useRefreshAudits();
+
+  const queryFilters = useMemo<Filters>(
+    () => ({ ...filters, search: debouncedSearch }),
+    [filters, debouncedSearch],
+  );
+
   const {
     audits,
+    totalElementos,
+    totalPaginas,
     isLoading,
+    isFetching,
     error,
-    refreshAudits,
-  } = useAudits();
+  } = useAuditsPagina(queryFilters, currentPage, PAGE_SIZE);
 
-  const [filters, setFilters] =
-    useState<Filters>(INITIAL_FILTERS);
+  const { resumen } = useAuditResumen();
 
-  const [selectedAudit, setSelectedAudit] =
-    useState<Audit | null>(null);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+      setCurrentPage(0);
+    }, 300);
 
-  const filteredAudits = useMemo(() => {
-    const now = new Date();
+    return () => clearTimeout(timeout);
+  }, [filters.search]);
 
-    return audits.filter((audit) => {
-      const search = filters.search.trim().toLowerCase();
+  function handleFiltersChange(next: Filters) {
+    setFilters(next);
+    setCurrentPage(0);
+  }
 
-      const matchesSearch =
-        !search ||
-        String(audit.id).includes(search) ||
-        audit.username.toLowerCase().includes(search) ||
-        audit.entidad.toLowerCase().includes(search) ||
-        String(audit.entidadId).includes(search);
-
-      const matchesEntity =
-        !filters.entidad ||
-        audit.entidad === filters.entidad;
-
-      const matchesAction =
-        !filters.accion ||
-        audit.accion === filters.accion;
-
-      const auditDate = new Date(audit.fecha);
-
-      let matchesDate = true;
-
-      if (filters.fecha === "today") {
-        matchesDate =
-          auditDate.toDateString() === now.toDateString();
-      }
-
-      if (filters.fecha === "7days") {
-        const sevenDaysAgo = new Date(now);
-
-        sevenDaysAgo.setDate(
-          now.getDate() - 7
-        );
-
-        matchesDate = auditDate >= sevenDaysAgo;
-      }
-
-      if (filters.fecha === "month") {
-        matchesDate =
-          auditDate.getMonth() === now.getMonth() &&
-          auditDate.getFullYear() ===
-            now.getFullYear();
-      }
-
-      return (
-        matchesSearch &&
-        matchesEntity &&
-        matchesAction &&
-        matchesDate
-      );
-    });
-  }, [audits, filters]);
+  const safeTotalPages = Math.max(totalPaginas, 1);
 
   const handleRefresh = async () => {
     await refreshAudits();
 
+    setCurrentPage(0);
     setSelectedAudit(null);
+  };
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+
+      const all = await getAllAuditsFiltered(queryFilters);
+
+      if (all.length > 0) {
+        downloadAuditsCSV(all, "auditoria.csv");
+      }
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
     <main className="min-h-full bg-background p-5">
       <div className="mx-auto max-w-[1680px] space-y-4">
         <AuditHeader
-          onRefresh={handleRefresh}
-          isLoading={isLoading}
-          onExport={() =>
-            downloadAuditsCSV(filteredAudits, "auditoria.csv")
-          }
-          canExport={filteredAudits.length > 0}
+          onRefresh={() => void handleRefresh()}
+          isLoading={isLoading || isFetching || isExporting}
+          onExport={() => void handleExport()}
+          canExport={totalElementos > 0 && !isExporting}
         />
 
         {error && (
@@ -113,11 +106,11 @@ export default function AuditoriaPage() {
           </div>
         )}
 
-        <AuditStats audits={audits} />
+        <AuditStats resumen={resumen} />
 
         <AuditFilters
           filters={filters}
-          onChange={setFilters}
+          onChange={handleFiltersChange}
         />
 
         {isLoading ? (
@@ -126,19 +119,22 @@ export default function AuditoriaPage() {
             <div className="h-100 animate-pulse rounded-xl bg-white lg:col-span-5" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <div className="lg:col-span-7">
               <AuditTable
-                audits={filteredAudits}
+                audits={audits}
                 selectedAudit={selectedAudit}
                 onSelect={setSelectedAudit}
+                totalItems={totalElementos}
+                currentPage={currentPage + 1}
+                totalPages={safeTotalPages}
+                pageSize={PAGE_SIZE}
+                onPageChange={(page) => setCurrentPage(page - 1)}
               />
             </div>
 
             <div className="lg:col-span-5">
-              <AuditInspector
-                audit={selectedAudit}
-              />
+              <AuditInspector audit={selectedAudit} />
             </div>
           </div>
         )}

@@ -35,7 +35,7 @@ export function AuditInspector({
 }: AuditInspectorProps) {
   if (!audit) {
     return (
-      <section className="flex min-h-100 items-center justify-center rounded-xl border border-line bg-white p-6">
+      <section className="flex h-full min-h-100 items-center justify-center rounded-xl border border-line bg-white p-6">
         <div className="max-w-xs text-center">
           <FileDiff
             size={32}
@@ -79,7 +79,7 @@ export function AuditInspector({
   };
 
   return (
-    <section className="rounded-xl border border-line bg-white p-4">
+    <section className="flex h-full flex-col rounded-xl border border-line bg-white p-4">
       <div className="flex items-center justify-between border-b border-line-strong pb-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface-container-low text-primary-container">

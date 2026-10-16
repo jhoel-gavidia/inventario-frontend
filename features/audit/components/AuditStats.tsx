@@ -5,62 +5,43 @@ import {
   Users,
 } from "lucide-react";
 
-import type { Audit } from "../types/audit";
+import type { AuditResumen } from "../types/audit";
 
 interface AuditStatsProps {
-  audits: Audit[];
+  resumen: AuditResumen | null;
 }
 
-export function AuditStats({ audits }: AuditStatsProps) {
-  const total = audits.length;
-
-  const criticalActions = audits.filter(
-    (audit) => audit.accion === "DELETE"
-  ).length;
-
-  const entityCounts = audits.reduce<Record<string, number>>(
-    (acc, audit) => {
-      acc[audit.entidad] = (acc[audit.entidad] ?? 0) + 1;
-
-      return acc;
-    },
-    {}
-  );
-
-  const mostModifiedEntity =
-    Object.entries(entityCounts).sort(
-      ([, a], [, b]) => b - a
-    )[0]?.[0] ?? "—";
-
-  const auditedUsers = new Set(
-    audits.map((audit) => audit.usuarioId)
-  ).size;
+export function AuditStats({ resumen }: AuditStatsProps) {
+  const total = resumen?.total ?? 0;
+  const criticalActions = resumen?.accionesCriticas ?? 0;
+  const auditedUsers = resumen?.usuariosAuditados ?? 0;
+  const mostModifiedEntity = resumen?.entidadMasModificada ?? null;
+  const mostModifiedTotal = resumen?.entidadMasModificadaTotal ?? 0;
 
   const stats = [
     {
       label: "Total auditorías",
-      value: total,
+      value: String(total),
       description: "Registros disponibles",
       icon: FileClock,
     },
     {
       label: "Acciones críticas",
-      value: criticalActions,
+      value: String(criticalActions),
       description: "Eliminaciones registradas",
       icon: Activity,
     },
     {
       label: "Entidad más modificada",
-      value: mostModifiedEntity,
-      description:
-        mostModifiedEntity === "—"
-          ? "Sin registros"
-          : `${entityCounts[mostModifiedEntity]} registros`,
+      value: mostModifiedEntity ?? "—",
+      description: mostModifiedEntity
+        ? `${mostModifiedTotal} registros`
+        : "Sin registros",
       icon: Package,
     },
     {
       label: "Usuarios auditados",
-      value: auditedUsers,
+      value: String(auditedUsers),
       description: "Usuarios con actividad",
       icon: Users,
     },
