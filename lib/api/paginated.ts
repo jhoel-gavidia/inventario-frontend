@@ -12,6 +12,15 @@ export interface PaginaResponse<T> {
 
 const PAGE_SIZE = 100;
 
+export async function getPagina<T>(
+  url: string,
+  params?: Record<string, unknown>,
+): Promise<PaginaResponse<T>> {
+  const { data } = await api.get<PaginaResponse<T>>(url, { params });
+
+  return data;
+}
+
 export async function getAllPages<T>(url: string): Promise<T[]> {
   const first = await api.get<PaginaResponse<T>>(url, {
     params: { pagina: 0, tamano: PAGE_SIZE },

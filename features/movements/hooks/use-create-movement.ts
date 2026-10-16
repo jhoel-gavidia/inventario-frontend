@@ -6,7 +6,11 @@ import {
 } from "@tanstack/react-query";
 
 import { createMovement } from "../services/movement-service";
-import { movementsQueryKey } from "./use-movements";
+import {
+  movementResumenQueryKey,
+  movementRowsQueryKey,
+  movementsQueryKey,
+} from "./use-movements";
 import { productsQueryKey } from "@/features/products/hooks/use-products";
 
 export function useCreateMovement() {
@@ -18,6 +22,12 @@ export function useCreateMovement() {
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: movementsQueryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: movementRowsQueryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: movementResumenQueryKey,
         }),
         queryClient.invalidateQueries({
           queryKey: productsQueryKey,

@@ -9,26 +9,26 @@ import {
   Search,
   Scale,
 } from "lucide-react";
-import { Suspense, useMemo, useState, type ReactNode } from "react";
+import {
+  Suspense,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 import { MovementForm } from "@/features/movements/components/MovementForm";
-import { useMovements } from "@/features/movements/hooks/use-movements";
+import {
+  useMovementResumen,
+  useMovementRows,
+} from "@/features/movements/hooks/use-movements";
 import type {
-  Movement,
+  MovementRow,
   MovementType,
 } from "@/features/movements/types/movement";
 import { useProducts } from "@/features/products/hooks/use-products";
 
-const PAGE_SIZE = 5;
-
-type MovementDetailRow = {
-  movement: Movement;
-  productoId: number;
-  productoNombre: string;
-  codigo: string;
-  cantidad: number;
-};
+const PAGE_SIZE = 10;
 
 export default function MovimientosPage() {
   return (
@@ -50,124 +50,51 @@ function MovimientosPageContent() {
         ? "ENTRADA"
         : undefined;
 
-  const {
-    movements,
-    isLoading: isLoadingMovements,
-    error: movementsError,
-    refreshMovements,
-  } = useMovements();
-
-  const { products, isLoading: isLoadingProducts } = useProducts();
+  const { products } = useProducts();
 
   const [filter, setFilter] = useState<"TODOS" | MovementType>("TODOS");
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const productMap = useMemo(
-    () => new Map(products.map((product) => [product.id, product])),
-    [products],
+  const { resumen } = useMovementResumen();
+
+  const {
+    rows,
+    totalElementos,
+    totalPaginas,
+    isLoading,
+    isFetching,
+    error,
+    refreshRows,
+  } = useMovementRows(
+    {
+      tipo: filter === "TODOS" ? undefined : filter,
+      search: debouncedSearch,
+    },
+    currentPage,
+    PAGE_SIZE,
   );
 
-  const todayMovements = useMemo(() => {
-    const today = new Date();
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(0);
+    }, 300);
 
-    return movements.filter((movement) => {
-      const date = new Date(movement.fecha);
-
-      return (
-        date.getFullYear() === today.getFullYear() &&
-        date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate()
-      );
-    });
-  }, [movements]);
-
-  const totalEntradas = useMemo(() => {
-    return todayMovements
-      .filter((movement) => movement.tipo === "ENTRADA")
-      .reduce(
-        (total, movement) =>
-          total +
-          movement.detalles.reduce(
-            (detailTotal, detail) => detailTotal + detail.cantidad,
-            0,
-          ),
-        0,
-      );
-  }, [todayMovements]);
-
-  const totalSalidas = useMemo(() => {
-    return todayMovements
-      .filter((movement) => movement.tipo === "SALIDA")
-      .reduce(
-        (total, movement) =>
-          total +
-          movement.detalles.reduce(
-            (detailTotal, detail) => detailTotal + detail.cantidad,
-            0,
-          ),
-        0,
-      );
-  }, [todayMovements]);
-
-  const balanceNeto = totalEntradas - totalSalidas;
-
-  const filteredRows = useMemo<MovementDetailRow[]>(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return movements
-      .filter((movement) => {
-        if (filter === "TODOS") {
-          return true;
-        }
-
-        return movement.tipo === filter;
-      })
-      .flatMap((movement) =>
-        movement.detalles.map((detail) => {
-          const product = productMap.get(detail.productoId);
-
-          return {
-            movement,
-            productoId: detail.productoId,
-            productoNombre: detail.productoNombre,
-            cantidad: detail.cantidad,
-            codigo: product?.codigo ?? "",
-          };
-        }),
-      )
-      .filter((row) => {
-        if (!normalizedSearch) {
-          return true;
-        }
-
-        return (
-          row.productoNombre.toLowerCase().includes(normalizedSearch) ||
-          row.codigo.toLowerCase().includes(normalizedSearch) ||
-          String(row.productoId).includes(normalizedSearch)
-        );
-      });
-  }, [movements, filter, search, productMap]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-
-  const paginatedRows = useMemo(() => {
-    const start = (safeCurrentPage - 1) * PAGE_SIZE;
-
-    return filteredRows.slice(start, start + PAGE_SIZE);
-  }, [filteredRows, safeCurrentPage]);
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   function handleFilterChange(nextFilter: "TODOS" | MovementType) {
     setFilter(nextFilter);
-    setCurrentPage(1);
+    setCurrentPage(0);
   }
 
-  function handleSearchChange(value: string) {
-    setSearch(value);
-    setCurrentPage(1);
-  }
+  const totalEntradas = resumen?.entradasHoy ?? 0;
+  const totalSalidas = resumen?.salidasHoy ?? 0;
+  const balanceNeto = totalEntradas - totalSalidas;
+
+  const safeCurrentPage = Math.min(currentPage, Math.max(totalPaginas - 1, 0));
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
@@ -188,8 +115,6 @@ function MovimientosPageContent() {
   function getMovementCode(id: number) {
     return `#MOV-${String(id).padStart(4, "0")}`;
   }
-
-  const isLoading = isLoadingMovements || isLoadingProducts;
 
   return (
     <main className="min-h-full bg-background px-4 py-6 text-on-surface sm:px-6 lg:px-8">
@@ -278,9 +203,7 @@ function MovimientosPageContent() {
                     <input
                       type="search"
                       value={search}
-                      onChange={(event) =>
-                        handleSearchChange(event.target.value)
-                      }
+                      onChange={(event) => setSearch(event.target.value)}
                       placeholder="Buscar por código o repuesto..."
                       className="h-10 w-full rounded-lg border border-line-strong bg-white pl-9 pr-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10"
                     />
@@ -289,13 +212,13 @@ function MovimientosPageContent() {
               </div>
             </div>
 
-            {movementsError ? (
+            {error ? (
               <div className="px-5 py-10 text-center">
-                <p className="text-sm text-error">{movementsError}</p>
+                <p className="text-sm text-error">{error}</p>
 
                 <button
                   type="button"
-                  onClick={() => void refreshMovements()}
+                  onClick={() => void refreshRows()}
                   className="mt-3 text-sm font-medium text-primary-container hover:underline"
                 >
                   Reintentar
@@ -320,51 +243,14 @@ function MovimientosPageContent() {
                     <tbody className="divide-y divide-line-faint">
                       {isLoading ? (
                         <LoadingRows />
-                      ) : paginatedRows.length > 0 ? (
-                        paginatedRows.map((row) => (
-                          <tr
-                            key={`${row.movement.id}-${row.productoId}`}
-                            className="transition hover:bg-surface-hover"
-                          >
-                            <td className="px-5 py-4 font-mono text-xs font-medium text-ink-muted">
-                              {getMovementCode(row.movement.id)}
-                            </td>
-
-                            <td className="whitespace-nowrap px-5 py-4 text-sm text-ink-muted">
-                              {formatDate(row.movement.fecha)}
-                            </td>
-
-                            <td className="px-5 py-4">
-                              <MovementBadge tipo={row.movement.tipo} />
-                            </td>
-
-                            <td className="px-5 py-4">
-                              <div className="max-w-57.5">
-                                <p className="truncate text-sm font-medium text-on-surface">
-                                  {row.productoNombre}
-                                </p>
-
-                                {row.codigo && (
-                                  <p className="mt-0.5 font-mono text-xs text-outline">
-                                    {row.codigo}
-                                  </p>
-                                )}
-                              </div>
-                            </td>
-
-                            <td className="px-5 py-4 text-right">
-                              <span
-                                className={`font-mono text-sm font-semibold ${
-                                  row.movement.tipo === "ENTRADA"
-                                    ? "text-success"
-                                    : "text-error"
-                                }`}
-                              >
-                                {row.movement.tipo === "ENTRADA" ? "+" : "-"}
-                                {row.cantidad}
-                              </span>
-                            </td>
-                          </tr>
+                      ) : rows.length > 0 ? (
+                        rows.map((row) => (
+                          <MovementRowItem
+                            key={`${row.movimientoId}-${row.productoId}`}
+                            row={row}
+                            formatDate={formatDate}
+                            getMovementCode={getMovementCode}
+                          />
                         ))
                       ) : (
                         <tr>
@@ -392,19 +278,19 @@ function MovimientosPageContent() {
 
                 <div className="flex items-center justify-between border-t border-line-soft px-5 py-4">
                   <p className="text-xs text-outline">
-                    {filteredRows.length === 0
+                    {totalElementos === 0
                       ? "0 registros"
-                      : `${(safeCurrentPage - 1) * PAGE_SIZE + 1}-${Math.min(
-                          safeCurrentPage * PAGE_SIZE,
-                          filteredRows.length,
-                        )} de ${filteredRows.length} registros`}
+                      : `${safeCurrentPage * PAGE_SIZE + 1}-${Math.min(
+                          (safeCurrentPage + 1) * PAGE_SIZE,
+                          totalElementos,
+                        )} de ${totalElementos} registros`}
                   </p>
 
                   <div className="flex items-center gap-1">
                     <PaginationButton
-                      disabled={safeCurrentPage <= 1}
+                      disabled={safeCurrentPage <= 0 || isFetching}
                       onClick={() =>
-                        setCurrentPage((page) => Math.max(1, page - 1))
+                        setCurrentPage((page) => Math.max(0, page - 1))
                       }
                       ariaLabel="Página anterior"
                     >
@@ -412,13 +298,17 @@ function MovimientosPageContent() {
                     </PaginationButton>
 
                     <span className="px-2 text-xs font-medium text-ink-muted">
-                      {safeCurrentPage} / {totalPages}
+                      {safeCurrentPage + 1} / {Math.max(totalPaginas, 1)}
                     </span>
 
                     <PaginationButton
-                      disabled={safeCurrentPage >= totalPages}
+                      disabled={
+                        safeCurrentPage >= totalPaginas - 1 || isFetching
+                      }
                       onClick={() =>
-                        setCurrentPage((page) => Math.min(totalPages, page + 1))
+                        setCurrentPage((page) =>
+                          Math.min(Math.max(totalPaginas - 1, 0), page + 1),
+                        )
                       }
                       ariaLabel="Página siguiente"
                     >
@@ -439,6 +329,57 @@ function MovimientosPageContent() {
         </div>
       </div>
     </main>
+  );
+}
+
+function MovementRowItem({
+  row,
+  formatDate,
+  getMovementCode,
+}: {
+  row: MovementRow;
+  formatDate: (value: string) => string;
+  getMovementCode: (id: number) => string;
+}) {
+  return (
+    <tr className="transition hover:bg-surface-hover">
+      <td className="px-5 py-4 font-mono text-xs font-medium text-ink-muted">
+        {getMovementCode(row.movimientoId)}
+      </td>
+
+      <td className="whitespace-nowrap px-5 py-4 text-sm text-ink-muted">
+        {formatDate(row.fecha)}
+      </td>
+
+      <td className="px-5 py-4">
+        <MovementBadge tipo={row.tipo} />
+      </td>
+
+      <td className="px-5 py-4">
+        <div className="max-w-57.5">
+          <p className="truncate text-sm font-medium text-on-surface">
+            {row.productoNombre}
+          </p>
+
+          {row.productoCodigo && (
+            <p className="mt-0.5 font-mono text-xs text-outline">
+              {row.productoCodigo}
+            </p>
+          )}
+        </div>
+      </td>
+
+      <td className="px-5 py-4 text-right">
+        <span
+          className={`font-mono text-sm font-semibold ${
+            row.tipo === "ENTRADA" ? "text-success" : "text-error"
+          }`}
+        >
+          {row.tipo === "ENTRADA" ? "+" : "-"}
+          {row.cantidad}
+        </span>
+      </td>
+    </tr>
   );
 }
 

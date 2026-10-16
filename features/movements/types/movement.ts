@@ -22,3 +22,23 @@ export interface MovementDetailRequest {
   productoId: number;
   cantidad: number;
 }
+
+export interface MovementRow {
+  movimientoId: number;
+  fecha: string;
+  tipo: MovementType;
+  productoId: number;
+  productoNombre: string;
+  productoCodigo: string;
+  cantidad: number;
+}
+
+export interface MovementResumen {
+  entradasHoy: number;
+  salidasHoy: number;
+}
+
+export interface MovementRowFilters {
+  tipo?: MovementType;
+  search?: string;
+}

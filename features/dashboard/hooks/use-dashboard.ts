@@ -2,8 +2,7 @@
 
 import { useProducts } from "@/features/products/hooks/use-products";
 import { useCategories } from "@/features/categories/hooks/use-categories";
-import { useMovements } from "@/features/movements/hooks/use-movements";
-
+import { useAllMovements } from "@/features/movements/hooks/use-movements";
 import type { Product } from "@/features/products/types/product";
 import type { Category } from "../../categories/types/category";
 
@@ -92,9 +91,9 @@ function buildDashboardStats(
 
   const attentionProducts = productsOutOfStock.slice(0, 5);
 
-  const recentMovements = [...movements]
-    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-    .slice(0, 5);
+  const recentMovements = [...movements].sort(
+    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime(),
+  );
 
   return {
     totalProducts: products.length,
@@ -115,7 +114,7 @@ function buildDashboardStats(
 export function useDashboard() {
   const productsQuery = useProducts();
   const categoriesQuery = useCategories();
-  const movementsQuery = useMovements();
+  const movementsQuery = useAllMovements();
 
   const stats = buildDashboardStats(
     productsQuery.products,
